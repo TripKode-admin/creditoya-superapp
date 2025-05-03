@@ -4,6 +4,7 @@ import "./globals.css";
 import NavBar from "@/components/gadgets/NavBar";
 import { DarkModeProvider } from "@/context/DarkModeContext";
 import { ClientAuthProvider } from "@/context/AuthContext";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({
           <DarkModeProvider>
             <NavBar />
             {children}
+            <SpeedInsights />
           </DarkModeProvider>
         </ClientAuthProvider>
       </body>
