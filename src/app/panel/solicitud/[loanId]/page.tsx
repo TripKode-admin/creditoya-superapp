@@ -77,7 +77,7 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
 
             {loan.EventLoanApplication && loan.EventLoanApplication.length !== 0 && loan.EventLoanApplication.map(events => (
                 events.type == "CHANGE_CANTITY" && events.isAnswered == false && (
-                    < div className="max-w-7xl border border-blue-100 dark:border-gray-400 hover:border-blue-200 rounded-lg mb-8 bg-blue-50 dark:bg-gray-600 p-4 mx-auto" >
+                    <div key={events.id} className="max-w-7xl border border-blue-100 dark:border-gray-400 hover:border-blue-200 rounded-lg mb-8 bg-blue-50 dark:bg-gray-600 p-4 mx-auto" >
                         <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
                             <div className="flex items-center justify-center">
                                 <BanknoteArrowDown size={36} className="text-red-400 drop-shadow-md" />
@@ -117,7 +117,9 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
 
             {loan.EventLoanApplication && loan.EventLoanApplication.length !== 0 && loan.EventLoanApplication.map(events => (
                 events.type == "DOCS_REJECT" && events.isAnswered == false && (
-                    <div className="max-w-7xl border border-blue-100 dark:border-gray-400 hover:border-blue-200 flex flex-row mx-auto rounded-lg mb-8 bg-blue-50 dark:bg-gray-600 p-4">
+                    <div
+                        key={events.id}
+                        className="max-w-7xl border border-blue-100 dark:border-gray-400 hover:border-blue-200 flex flex-row mx-auto rounded-lg mb-8 bg-blue-50 dark:bg-gray-600 p-4">
                         <div className="flex flex-col sm:flex-row gap-3 grow">
                             <div className="flex justify-start sm:grid sm:place-content-center">
                                 <FileX2 size={40} className="text-red-400 drop-shadow-md" />
