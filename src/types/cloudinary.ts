@@ -1,0 +1,1 @@
+export type FolderNames = 'reports-images' | 'avatars_users' | 'images_with_cc' | 'signatures';
