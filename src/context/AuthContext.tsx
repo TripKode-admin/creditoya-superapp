@@ -146,7 +146,7 @@ export const ClientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         });
 
         // Redirect to home page
-        router.push('/');
+        window.location.href = '/';
     };
 
     // Loading state management functions

@@ -47,7 +47,7 @@ function useAuth() {
 
                 if (success) {
                     // Redirigir al panel del cliente si la autenticación fue exitosa
-                    router.push('/panel');
+                    window.location.href = "/panel"
                 }
             } else {
                 // Registrar un nuevo usuario usando el método del contexto
@@ -64,7 +64,7 @@ function useAuth() {
 
                 if (success) {
                     // Redirigir al panel del cliente si el registro fue exitoso
-                    router.push('/panel');
+                    window.location.href = "/panel"
                 }
             }
         } catch (err) {
