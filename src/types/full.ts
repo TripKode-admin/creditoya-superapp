@@ -113,11 +113,11 @@ export type ILoanApplication = {
     userId: string;
     employeeId?: string;
     cantity: string;
-    firstFlyer?: string;
+    fisrt_flyer?: string;
     upid_first_flyer?: string;
-    secondFlyer?: string;
+    second_flyer?: string;
     upid_second_flyer?: string;
-    thirdFlyer?: string;
+    third_flyer?: string;
     upid_third_flyer?: string;
     reasonChangeCantity?: string;
     amountChangeReason?: string;
