@@ -152,7 +152,7 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
             {loan.EventLoanApplication && loan.EventLoanApplication.length !== 0 && loan.EventLoanApplication.map(events => (
                 events.type == "DOCS_REJECT" && events.isAnswered == false && (
                     <div
-                        // key={events.id}
+                        key={events.id}
                         className="max-w-7xl border-l-4 border-l-red-400 border border-blue-100 dark:border-gray-700 dark:border-l-red-500 rounded-lg shadow-sm mb-8 bg-white dark:bg-gray-800 mx-auto"
                     >
                         <div className="flex items-start">
