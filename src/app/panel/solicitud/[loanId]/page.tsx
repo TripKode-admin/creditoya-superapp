@@ -4,10 +4,27 @@ import LoadingPanel from "@/components/panel/Loading";
 import useLoan from "@/hooks/useLoan";
 import { use } from "react";
 import DotBox from "@/components/panel/perfil/DotBox";
-import { CircleDollarSign, Files, File, WalletMinimal, Paperclip, CircleUser, Smartphone, Mail, MapPin, Earth, Building2, CalendarClock, FileX2, CircleX, HandCoins, BanknoteArrowDown, CircleCheck } from "lucide-react";
+import {
+    CircleDollarSign,
+    WalletMinimal,
+    CircleUser,
+    Smartphone,
+    Mail,
+    MapPin,
+    Earth,
+    Building2,
+    CalendarClock,
+    FileX2,
+    CircleX,
+    BanknoteArrowDown,
+    CircleCheck,
+    ArrowLeft
+} from "lucide-react";
 import { stringToPriceCOP } from "@/handlers/stringToCop";
 import { BankTypes, handleKeyToStringBank } from "@/handlers/stringToBank";
 import Image from "next/image";
+import DocumentsRequired from "@/components/panel/solicitud/DocumentRequired";
+import { useRouter } from "next/navigation";
 
 function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
     const resolveParams = use(params);
@@ -17,6 +34,8 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
         loading,
         error,
     } = useLoan({ loanId });
+
+    const router = useRouter()
 
     // Formatear el nombre de la empresa para mostrar
     const formatCompanyName = (company: string): string => {
@@ -57,6 +76,16 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
 
     return (
         <main className="min-h-dvh dark:bg-gray-900 py-8 px-4 pt-24">
+
+            <div className="max-w-7xl mx-auto mb-16 mt-5 dark:text-gray-100">
+                <div className="flex flex-row gap-2" onClick={() => router.push('/panel')}>
+                    <div className="grid place-content-center">
+                        <ArrowLeft size={20} />
+                    </div>
+                    <p className="grid place-content-center mb-0.5">Todos los prestamos</p>
+                </div>
+            </div>
+
             {/* Top Card - Loan Amount */}
             <div className="max-w-7xl mx-auto rounded-lg mb-8">
                 <div className="flex flex-row justify-between items-center">
@@ -77,38 +106,43 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
 
             {loan.EventLoanApplication && loan.EventLoanApplication.length !== 0 && loan.EventLoanApplication.map(events => (
                 events.type == "CHANGE_CANTITY" && events.isAnswered == false && (
-                    <div key={events.id} className="max-w-7xl border border-blue-100 dark:border-gray-400 hover:border-blue-200 rounded-lg mb-8 bg-blue-50 dark:bg-gray-600 p-4 mx-auto" >
-                        <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
-                            <div className="flex items-center justify-center">
-                                <BanknoteArrowDown size={36} className="text-red-400 drop-shadow-md" />
+                    <div key={events.id} className="max-w-7xl border-l-4 border-l-blue-400 border border-blue-100 dark:border-gray-700 dark:border-l-blue-500 rounded-lg shadow-sm mb-8 bg-white dark:bg-gray-800 mx-auto">
+                        {/* Encabezado con icono */}
+                        <div className="flex items-center gap-3 border-b border-blue-100 dark:border-gray-700 p-5">
+                            <div className="rounded-full bg-blue-100 dark:bg-blue-900/30 p-2 flex-shrink-0">
+                                <BanknoteArrowDown size={20} className="text-blue-500" />
                             </div>
-
-                            <div className="grow">
-                                <h3 className="font-extrabold text-lg text-gray-500 dark:text-gray-200">La cantidad de tu solicitud ha cambiado</h3>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Tu solicitud está pre-aprobada pero con una cantidad diferente</p>
-                                <div className="mb-4 md:mb-0">
-                                    <p className="text-sm font-semibold text-gray-600 dark:text-gray-50">Cantidad Aprobada</p>
-                                    <p className="text-xs font-thin dark:text-gray-50">{stringToPriceCOP(loan.newCantity!) || "No hay una razón"}</p>
-                                </div>
-                                <div className="mb-4 md:mb-0">
-                                    <p className="text-sm font-semibold text-gray-600 dark:text-gray-50">Razón</p>
-                                    <p className="text-xs font-thin dark:text-gray-50">{loan.reasonChangeCantity || "No hay una razón"}</p>
-                                </div>
+                            <div>
+                                <h3 className="font-bold text-gray-800 dark:text-gray-100">La cantidad de tu solicitud ha cambiado</h3>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Tu solicitud está pre-aprobada pero con una cantidad diferente</p>
                             </div>
+                        </div>
 
-                            <div className="flex justify-start">
-                                <div className="flex flex-row md:flex-col lg:flex-row gap-2 w-full md:w-auto">
-                                    <button className="flex-1 md:flex-auto p-2 cursor-pointer bg-red-400 hover:bg-red-500 border border-transparent hover:border-blue-100 dark:hover:border-gray-600 rounded-md flex items-center justify-center gap-1">
-                                        <CircleX size={18} className="drop-shadow-md text-red-800" />
-                                        <span className="text-sm text-white">Rechazar</span>
-                                    </button>
-
-                                    <button className="flex-1 md:flex-auto p-2 cursor-pointer bg-green-400 hover:bg-green-500 dark:hover:bg-green-500 border border-transparent hover:border-blue-100 dark:hover:border-gray-600 rounded-md flex items-center justify-center gap-1">
-                                        <CircleCheck size={18} className="drop-shadow-md text-green-800" />
-                                        <span className="text-sm text-white">Aceptar</span>
-                                    </button>
+                        {/* Contenido */}
+                        <div className="p-5">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="rounded-md bg-gray-50 dark:bg-gray-700 p-4">
+                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Cantidad Aprobada</p>
+                                    <p className="text-xl font-semibold text-blue-600 dark:text-blue-400">{stringToPriceCOP(loan.newCantity!) || "No especificada"}</p>
+                                </div>
+                                <div className="rounded-md bg-gray-50 dark:bg-gray-700 p-4">
+                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Razón</p>
+                                    <p className="text-sm text-gray-700 dark:text-gray-300">{loan.reasonChangeCantity || "No hay una razón especificada"}</p>
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Acciones */}
+                        <div className="flex border-t border-blue-100 dark:border-gray-700">
+                            <button className="flex-1 py-3 px-4 flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                <CircleX size={18} className="text-red-500" />
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Rechazar</span>
+                            </button>
+                            <div className="w-px h-full bg-blue-100 dark:bg-gray-700"></div>
+                            <button className="flex-1 py-3 px-4 flex items-center justify-center gap-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                                <CircleCheck size={18} className="text-green-500" />
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Aceptar</span>
+                            </button>
                         </div>
                     </div>
                 )
@@ -118,24 +152,33 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
             {loan.EventLoanApplication && loan.EventLoanApplication.length !== 0 && loan.EventLoanApplication.map(events => (
                 events.type == "DOCS_REJECT" && events.isAnswered == false && (
                     <div
-                        key={events.id}
-                        className="max-w-7xl border border-blue-100 dark:border-gray-400 hover:border-blue-200 flex flex-row mx-auto rounded-lg mb-8 bg-blue-50 dark:bg-gray-600 p-4">
-                        <div className="flex flex-col sm:flex-row gap-3 grow">
-                            <div className="flex justify-start sm:grid sm:place-content-center">
-                                <FileX2 size={40} className="text-red-400 drop-shadow-md" />
-                            </div>
-                            <div>
-                                <h3 className="font-extrabold text-lg text-gray-500 dark:text-gray-200">Un documento a sido rechazado</h3>
-                                <div className="">
-                                    <p className="text-sm font-semibold text-gray-600 dark:text-gray-50">Razon</p>
-                                    <p className="text-xs font-thin dark:text-gray-50">{loan.reasonReject || "No hay una razon"}</p>
+                        // key={events.id}
+                        className="max-w-7xl border-l-4 border-l-red-400 border border-blue-100 dark:border-gray-700 dark:border-l-red-500 rounded-lg shadow-sm mb-8 bg-white dark:bg-gray-800 mx-auto"
+                    >
+                        <div className="flex items-start">
+                            {/* Contenido principal */}
+                            <div className="flex p-5 gap-4 grow">
+                                <div className="rounded-full bg-red-100 dark:bg-red-900/30 p-2 flex-shrink-0 self-start">
+                                    <FileX2 size={20} className="text-red-500" />
+                                </div>
+
+                                <div className="space-y-3 grow">
+                                    <div>
+                                        <h3 className="font-bold text-gray-800 dark:text-gray-100">Un documento ha sido rechazado</h3>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">Revisa la información para continuar con tu solicitud</p>
+                                    </div>
+
+                                    <div className="rounded-md bg-gray-50 dark:bg-gray-700 p-3 w-full">
+                                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Razón del rechazo</p>
+                                        <p className="text-sm text-gray-700 dark:text-gray-300">{loan.reasonReject || "No hay una razón especificada"}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="sm:grid sm:place-content-center justify-end">
-                            <div className="p-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 border border-transparent hover:border-blue-100 dark:hover:border-gray-600 rounded-md">
-                                <CircleX size={20} className="drop-shadow-md text-red-400" />
-                            </div>
+
+                            {/* Botón cerrar */}
+                            <button className="p-4 text-gray-400 hover:text-red-500 transition-colors self-start">
+                                <CircleX size={18} />
+                            </button>
                         </div>
                     </div>
                 )
@@ -146,10 +189,15 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
                 {/* Left Column - Financial and Documents */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Financial Information */}
-                    <div className="bg-gray-50 border border-gray-100 hover:border-gray-200 dark:hover:border-gray-600 dark:border-gray-700 dark:bg-gray-800 rounded-lg shadow p-6">
-                        <div className="flex items-center gap-3 mb-6">
-                            <WalletMinimal size={20} className="text-green-600 dark:text-green-300 drop-shadow-md" />
-                            <h2 className="text-lg font-semibold text-gray-600 dark:text-gray-100">Información Financiera</h2>
+                    <div className="border border-gray-100 hover:border-gray-200 dark:hover:border-gray-600 dark:border-gray-700 dark:bg-gray-800 rounded-lg shadow p-6">
+                        <div className="flex items-center mb-8">
+                            <div className="mr-3 dark:bg-gray-700 bg-green-100/70 p-2 rounded-full">
+                                <WalletMinimal className="text-green-500 dark:text-green-400 w-4 h-4 drop-shadow" />
+                            </div>
+                            <div>
+                                <p className="font-medium text-sm text-green-700 dark:text-green-400">Información Financiera</p>
+                                <p className="text-gray-500 dark:text-gray-300 text-xs mt-1">Datos en los que el dinero de tu prestamo fui depositado</p>
+                            </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
@@ -172,63 +220,21 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
                     </div>
 
                     {/* Required Documents */}
-                    <div className="bg-gray-50 border border-gray-100 dark:border-gray-700 dark:bg-gray-800 rounded-lg shadow p-6">
-                        <div className="flex items-center gap-3 mb-6">
-                            <Files size={20} className="text-green-600 dark:text-green-300 drop-shadow-md" />
-                            <h2 className="text-lg font-semibold text-gray-600 dark:text-gray-100">Documentos Requeridos</h2>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-                            <div className="flex items-center bg-green-50 border border-green-100 dark:bg-gray-500 p-4 rounded-lg">
-                                <div className="mr-3">
-                                    <Paperclip className="text-green-400 dark:text-green-300 drop-shadow-md" />
-                                </div>
-                                <div>
-                                    <p className="font-medium text-green-600 dark:text-green-400">Primer Volante de Pago</p>
-                                    <p className="text-gray-500 dark:text-gray-400 text-xs">{loan.upid_first_flyer}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center bg-green-50 border border-green-100 dark:bg-gray-500 p-4 rounded-lg">
-                                <div className="mr-3">
-                                    <Paperclip className="text-green-400 dark:text-green-300 drop-shadow-md" />
-                                </div>
-                                <div>
-                                    <p className="font-medium text-green-600 dark:text-green-400">Segundo Volante de Pago</p>
-                                    <p className="text-gray-500 dark:text-gray-400 text-xs">{loan.upid_second_flyer}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center bg-green-50 border border-green-100 dark:bg-gray-500 p-4 rounded-lg">
-                                <div className="mr-3">
-                                    <Paperclip className="text-green-400 dark:text-green-300 drop-shadow-md" />
-                                </div>
-                                <div>
-                                    <p className="font-medium text-green-600 dark:text-green-400">Tercer Volante de Pago</p>
-                                    <p className="text-gray-500 dark:text-gray-400 text-xs">{loan.upid_third_flyer}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center bg-green-50 border border-green-100 dark:bg-gray-500 p-4 rounded-lg">
-                                <div className="mr-3">
-                                    <Paperclip className="text-green-400 dark:text-green-300 drop-shadow-md" />
-                                </div>
-                                <div>
-                                    <p className="font-medium text-green-600 dark:text-green-400">Carta laboral</p>
-                                    <p className="text-gray-500 dark:text-gray-400 text-xs">{loan.upid_labor_card}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <DocumentsRequired loan={loan} />
                 </div>
 
                 {/* Right Column - Personal Info and Status */}
                 <div className="space-y-6">
                     {/* Personal Information */}
-                    <div className="bg-gray-50 border border-gray-100 dark:border-gray-700 dark:bg-gray-800 rounded-lg shadow p-6">
-                        <div className="flex items-center gap-3 mb-6">
-                            <CircleUser className="text-green-600 dark:text-green-300 drop-shadow-md" size={20} />
-                            <h2 className="text-lg dark:text-gray-100 font-semibold">Información Personal</h2>
+                    <div className="border border-gray-100 dark:border-gray-700 dark:bg-gray-800 rounded-lg shadow p-6">
+                        <div className="flex items-center mb-8">
+                            <div className="mr-3 dark:bg-gray-700 bg-green-100/70 p-2 rounded-full">
+                                <CircleUser className="text-green-500 dark:text-green-400 w-4 h-4 drop-shadow" />
+                            </div>
+                            <div>
+                                <p className="font-medium text-sm text-green-700 dark:text-green-400">Información Personal</p>
+                                <p className="text-gray-500 dark:text-gray-300 text-xs mt-1">Datos del creador de la solicitud</p>
+                            </div>
                         </div>
                         <div className="space-y-4">
                             <div>
@@ -241,7 +247,10 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
                                         height={30}
                                         className="rounded-full drop-shadow-md object-cover aspect-square overflow-hidden"
                                     />
-                                    <p className="font-medium text-gray-800 dark:text-gray-100">David Vasquez Mahecha</p>
+                                    <div>
+                                        <p className="font-medium text-gray-800 dark:text-gray-100">David Vasquez Mahecha</p>
+                                        <p onClick={() => router.push('/panel/perfil')} className="text-xs text-gray-400 hover:text-gray-500 dark:text-gray-400 cursor-pointer">Ir al perfil</p>
+                                    </div>
                                 </div>
                             </div>
                             <div>
@@ -282,7 +291,7 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
                     </div>
 
                     {/* Application Status */}
-                    <div className="bg-gray-50 border border-gray-100 dark:border-gray-700 dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div className="border border-gray-100 dark:border-gray-700 dark:bg-gray-800 rounded-lg shadow p-6">
                         <div className="flex items-center gap-3 mb-6">
                             <CalendarClock size={20} className="drop-shadow-md text-green-600 dark:text-green-300" />
                             <h2 className="text-lg dark:text-gray-200 font-semibold">Estado de Solicitud</h2>
@@ -301,7 +310,8 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
                     </div>
                 </div>
             </div>
-        </main >
+
+        </main>
     )
 }
 

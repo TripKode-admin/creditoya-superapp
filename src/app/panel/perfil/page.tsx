@@ -51,11 +51,6 @@ function PanelPerfilUser() {
                     <LatestLoan />
                 </div>
             </div>
-            {/* <div className="max-w-7xl mx-auto py-3 px-4 flex flex-wrap gap-6 sm:gap-20">
-                <div>
-
-                </div>
-            </div> */}
         </main>
     );
 }
