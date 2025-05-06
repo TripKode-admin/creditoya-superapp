@@ -70,6 +70,7 @@ function PerfilAvatar() {
                         width={160}
                         height={160}
                         className="w-full h-full rounded-full border border-gray-200 dark:border-zinc-700 shadow-md object-cover"
+                        priority={true}
                     />
                     {uploading && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-full">

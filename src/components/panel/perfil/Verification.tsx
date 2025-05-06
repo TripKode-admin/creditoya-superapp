@@ -51,7 +51,7 @@ function VerificationPerfil() {
                 }
             );
 
-            console.log("Documento subido exitosamente:", response.data);
+            // console.log("Documento subido exitosamente:", response.data);
             setUploadStatus(prev => ({ ...prev, docs: 'success' }));
 
             // Aquí podrías actualizar el estado de userComplete si es necesario
@@ -83,7 +83,7 @@ function VerificationPerfil() {
                 withCredentials: true
             });
 
-            console.log("Selfie subida exitosamente:", response.data);
+            // console.log("Selfie subida exitosamente:", response.data);
             setUploadStatus(prev => ({ ...prev, selfie: 'success' }));
 
             // Aquí podrías actualizar el estado de userComplete si es necesario
