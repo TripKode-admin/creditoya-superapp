@@ -128,7 +128,13 @@ function LatestLoan() {
                         <p className="text-xs mt-2 text-gray-400">¡Datos listos? Recarga o pulsa para verificar.</p>
                     </div>
                     <div className="grid place-content-center">
-                        <div className="hover:bg-gray-100 cursor-pointer rounded-md border border-gray-200 shadow p-1"><RefreshCcw size={20} className="text-red-400 drop-shadow-md" /></div>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="hover:bg-gray-100 cursor-pointer rounded-md border border-gray-200 shadow p-1"
+                            aria-label="Recargar página"
+                        >
+                            <RefreshCcw size={20} className="text-red-400 drop-shadow-md" />
+                        </button>
                     </div>
                 </div>
             )}

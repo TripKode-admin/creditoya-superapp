@@ -1,8 +1,9 @@
 "use client"
 
+import { useState } from "react";
 import useFormReq from "@/hooks/useNewReq";
 import VerificationCodeInput from "./VerificationCodeInput";
-import { CircleCheck } from "lucide-react";
+import { CircleCheck, Loader2 } from "lucide-react";
 
 function LoanVerifyToken({ PreLoanId }: { PreLoanId: string | null }) {
     const {
@@ -10,6 +11,14 @@ function LoanVerifyToken({ PreLoanId }: { PreLoanId: string | null }) {
         sentToken,
         isSuccesVerifyToken,
     } = useFormReq();
+
+    const [isVerifying, setIsVerifying] = useState(false);
+
+    const handleVerify = async () => {
+        setIsVerifying(true);
+        await sentToken();
+        setIsVerifying(false);
+    };
 
     return (
         <div className="flex items-center justify-center mt-10">
@@ -32,12 +41,23 @@ function LoanVerifyToken({ PreLoanId }: { PreLoanId: string | null }) {
 
                     <div className="flex flex-col space-y-3">
                         <button
-                            onClick={sentToken}
-                            className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition-colors"
+                            onClick={handleVerify}
+                            disabled={isVerifying}
+                            className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition-colors flex items-center justify-center disabled:bg-green-400"
                         >
-                            Verificar
+                            {isVerifying ? (
+                                <>
+                                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                                    Verificando...
+                                </>
+                            ) : (
+                                "Verificar"
+                            )}
                         </button>
-                        <button className="text-green-600 hover:text-green-800 text-sm">
+                        <button
+                            className="text-green-600 hover:text-green-800 text-sm"
+                            disabled={isVerifying}
+                        >
                             Reenviar código
                         </button>
                     </div>
@@ -51,10 +71,10 @@ function LoanVerifyToken({ PreLoanId }: { PreLoanId: string | null }) {
 
             {isSuccesVerifyToken && (
                 <div className="rounded-lg p-6 text-center max-w-md w-full">
-                    <div className="grid place-content-center">
-                        <CircleCheck className="text-green-500" />
+                    <div className="grid place-content-center mb-4">
+                        <CircleCheck className="text-green-500 w-16 h-16" />
                     </div>
-                    <p className="text-green-600 mb-4">
+                    <p className="text-green-600 font-medium text-lg mb-4">
                         El token ha sido verificado exitosamente.
                     </p>
                     <p className="text-sm text-gray-500">
@@ -63,7 +83,7 @@ function LoanVerifyToken({ PreLoanId }: { PreLoanId: string | null }) {
                 </div>
             )}
         </div>
-    )
+    );
 }
 
 export default LoanVerifyToken;
