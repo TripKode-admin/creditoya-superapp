@@ -38,7 +38,7 @@ function PanelPerfilUser() {
     }
 
     return (
-        <main className="min-h-dvh dark:bg-gray-900 pt-32 pb-20">
+        <main className="min-h-dvh dark:bg-black pt-32 pb-20">
             <div className="max-w-7xl mx-auto py-3 px-4 flex flex-wrap gap-6 sm:gap-20">
                 <div className="basis-[400px] grow space-y-4">
                     <PerfilAvatar />

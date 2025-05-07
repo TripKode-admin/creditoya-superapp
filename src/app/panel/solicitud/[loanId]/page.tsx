@@ -75,7 +75,7 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
     }
 
     return (
-        <main className="min-h-dvh dark:bg-gray-900 py-8 px-4 pt-24">
+        <main className="min-h-dvh dark:bg-black py-8 px-4 pt-24">
 
             <div className="max-w-7xl mx-auto mb-16 mt-5 dark:text-gray-100">
                 <div className="flex flex-row gap-2" onClick={() => router.push('/panel')}>

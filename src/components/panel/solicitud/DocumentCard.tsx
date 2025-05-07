@@ -91,7 +91,7 @@ const DocumentCard = ({
     if (!documentUrl) {
         return (
             <div
-                className={`bg-green-50/80 backdrop-blur-sm border-2 border-dashed ${isDragging ? 'border-green-400 bg-green-100/90' : 'border-green-200'} shadow-sm hover:border-green-300 transition-all duration-300 p-4 rounded-lg flex flex-col justify-center items-center mb-3 min-h-[100px] cursor-pointer`}
+                className={`bg-green-50/80 dark:bg-gray-700 backdrop-blur-sm border-2 border-dashed ${isDragging ? 'border-green-400 bg-green-100/90' : 'border-green-200'} shadow-sm hover:border-green-300 transition-all duration-300 p-4 rounded-lg flex flex-col justify-center items-center mb-3 min-h-[100px] cursor-pointer`}
                 onClick={triggerFileInput}
                 onDragOver={(e) => {
                     e.preventDefault();
@@ -114,7 +114,7 @@ const DocumentCard = ({
                 />
 
                 <div className="flex flex-col items-center text-center">
-                    <div className="mb-2 bg-green-100/70 p-3 rounded-full">
+                    <div className="mb-2 bg-green-100/70 dark:bg-gray-600 p-3 rounded-full">
                         {isUploading ? (
                             <div className="w-6 h-6 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
                         ) : (

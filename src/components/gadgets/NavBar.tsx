@@ -3,25 +3,38 @@
 import { User, Moon, Sun, Menu, X, CircleX, UserCircle } from 'lucide-react';
 import creditoyaLogo from "@/assets/logos/creditoya_logo_minimalist.png"
 import Image from 'next/image';
-import useNavBar from '@/hooks/useNavBar';
+import { useDarkMode } from '@/context/DarkModeContext'; // Import the dark mode context
 import { useClientAuth } from '@/context/AuthContext';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 function NavBar() {
+    const [scrolled, setScrolled] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const router = useRouter();
 
-    const {
-        scrolled,
-        darkmode,
-        isMenuOpen,
-        router,
-        changeDarkMode,
-        setIsMenuOpen
-    } = useNavBar();
+    // Use the global dark mode context
+    const { darkmode, changeDarkMode } = useDarkMode();
 
     const {
         user,
         isAuthenticated,
         logout,
     } = useClientAuth();
+
+    // Handle scroll effect
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 10) {
+                setScrolled(true);
+            } else {
+                setScrolled(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     // Función para verificar si la URL del avatar es válida
     const isValidAvatar = (avatarUrl: string | undefined | null): boolean => {
@@ -30,11 +43,11 @@ function NavBar() {
 
     return (
         <div className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${scrolled
-            ? `backdrop-blur-md ${darkmode ? 'bg-gray-900/80 dark' : 'bg-white/80'}`
-            : `${darkmode ? 'bg-gray-900 dark' : 'bg-white'}`
+            ? 'backdrop-blur-md bg-white/80 dark:bg-gray-900/80'
+            : 'bg-white dark:bg-black'
             }`}>
             {/* Barra de navegación principal */}
-            <nav className={`py-3 px-4 md:px-6 max-w-7xl mx-auto ${darkmode ? 'text-gray-100' : 'text-gray-800'}`}>
+            <nav className="py-3 px-4 md:px-6 max-w-7xl mx-auto text-gray-800 dark:text-gray-100">
                 <div className="flex items-center justify-between">
                     {/* Logo */}
                     <div className="flex items-center">
@@ -77,9 +90,9 @@ function NavBar() {
                                 </div>
                             </div>
                         ) : (
-                            <button onClick={() => router.push("/auth")} className={`bg-green-50 hover:bg-green-100 cursor-pointer px-3 py-2 text-sm rounded-md ${darkmode ? 'dark:bg-gray-800 dark:hover:bg-gray-700 text-green-300' : 'text-green-500'}`}>
+                            <button onClick={() => router.push("/auth")} className="bg-green-50 hover:bg-green-100 cursor-pointer px-3 py-2 text-sm rounded-md text-green-500 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-green-300">
                                 <span className="flex items-center font-normal">
-                                    <User size={16} className={`mr-2 ${darkmode ? 'text-green-300' : 'text-green-500'}`} />
+                                    <User size={16} className="mr-2 text-green-500 dark:text-green-300" />
                                     Cuenta
                                 </span>
                             </button>
@@ -87,7 +100,7 @@ function NavBar() {
 
                         <button
                             onClick={changeDarkMode}
-                            className="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer dark:text-green-400 dark:hover:text-green-300 text-green-600 hover:text-green-700 transition-colors p-2 rounded-md border border-gray-100 dark:border-gray-700"
+                            className="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 transition-colors p-2 rounded-md border border-gray-100 dark:border-gray-700"
                             aria-label={darkmode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
                         >
                             {darkmode ? <Sun className='drop-shadow-md' size={18} /> : <Moon size={18} className='drop-shadow-md' />}
@@ -108,7 +121,7 @@ function NavBar() {
                     {/* Botón móvil */}
                     <button
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        className={`md:hidden ${darkmode ? 'text-gray-200' : 'text-gray-600'}`}
+                        className="md:hidden text-gray-600 dark:text-gray-200"
                         aria-label="Menú"
                     >
                         {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -119,7 +132,7 @@ function NavBar() {
             {/* Menú móvil */}
             {
                 isMenuOpen && (
-                    <div className={`md:hidden border-t ${darkmode ? 'border-gray-800 bg-gray-800/95 backdrop-blur-sm' : 'border-gray-100 bg-gray-50/95 backdrop-blur-sm'}`}>
+                    <div className="md:hidden border-t border-gray-100 dark:border-gray-800 bg-gray-50/95 dark:bg-black backdrop-blur-sm">
                         <div className="max-w-6xl mx-auto py-3 px-4">
                             {/* Perfil de usuario en móvil */}
                             {isAuthenticated ? (
@@ -140,7 +153,7 @@ function NavBar() {
                                             </div>
                                         )}
                                         <div className="flex flex-col">
-                                            <p className={`text-sm font-semibold ${darkmode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                            <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                                                 {user?.names} {user?.firstLastName}
                                             </p>
                                             <p
@@ -162,21 +175,21 @@ function NavBar() {
                                             router.push("/auth");
                                             setIsMenuOpen(false);
                                         }}
-                                        className={`flex items-center py-2 px-3 rounded-md w-full ${darkmode ? 'hover:bg-gray-700 text-gray-200' : 'hover:bg-gray-100 text-gray-800'}`}
+                                        className="flex items-center py-2 px-3 rounded-md w-full text-gray-800 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
                                     >
-                                        <User size={16} className={`mr-2 ${darkmode ? 'text-green-300' : 'text-green-500'}`} />
+                                        <User size={16} className="mr-2 text-green-500 dark:text-green-300" />
                                         <span>Iniciar Sesión</span>
                                     </button>
                                 </div>
                             )}
 
                             <div className="flex items-center justify-between py-2">
-                                <span className={`text-sm ${darkmode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                <span className="text-sm text-gray-700 dark:text-gray-300">
                                     Modo {darkmode ? 'oscuro' : 'claro'}
                                 </span>
                                 <button
                                     onClick={changeDarkMode}
-                                    className={`${darkmode ? 'text-green-400' : 'text-green-600'}`}
+                                    className="text-green-600 dark:text-green-400"
                                     aria-label={darkmode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
                                 >
                                     {darkmode ? <Sun size={16} /> : <Moon size={16} />}
@@ -191,7 +204,7 @@ function NavBar() {
                                             logout();
                                             setIsMenuOpen(false);
                                         }}
-                                        className={`flex items-center justify-center gap-2 py-2 px-3 rounded-md w-full ${darkmode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
+                                        className="flex items-center justify-center gap-2 py-2 px-3 rounded-md w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
                                     >
                                         <CircleX size={16} className="text-red-400" />
                                         <span className="text-sm font-semibold text-red-400">Cerrar Sesión</span>

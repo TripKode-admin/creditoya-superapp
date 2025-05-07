@@ -1,7 +1,9 @@
 import usePanel from "@/hooks/usePanel"
-import { CircleHelp, FolderPlus } from "lucide-react"
+import { CircleHelp, CircleMinus, CirclePlus } from "lucide-react"
+import { useRouter } from "next/navigation";
 
 function HeaderPanel({ isReq }: { isReq?: boolean }) {
+    const router = useRouter();
 
     const {
         toggleNewReq,
@@ -29,29 +31,23 @@ function HeaderPanel({ isReq }: { isReq?: boolean }) {
                         aria-label="Crear nueva solicitud"
                         onClick={handleOpenNewReq}
                     >
-                        <FolderPlus size={14} className="flex-shrink-0" />
-                        <span className="text-xs font-medium whitespace-nowrap">
+                        {isReq
+                            ? <CircleMinus size={14} className="flex-shrink-0" />
+                            : <CirclePlus size={14} className="flex-shrink-0" />
+                        }
+                        <span className="text-xs font-medium whitespace-nowrap pb-0.5">
                             {isReq ? "Cancelar" : "Nueva solicitud"}
                         </span>
                     </button>
 
-                    {isReq && (
-                        <button
-                            className="inline-flex items-center dark:text-gray-100 gap-1 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 shadow-sm cursor-pointer dark:bg-gray-800 dark:hover:bg-gray-700"
-                            aria-label="Guardar borrador"
-                        >
-                            <FolderPlus size={14} className="flex-shrink-0" />
-                            <span className="text-xs font-medium whitespace-nowrap">Guardar Borrador</span>
-                        </button>
-                    )}
-
                     {!isReq && (
                         <button
-                            className="inline-flex items-center gap-1 px-3 py-1.5 text-gray-600 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200"
+                        onClick={() => router.push("/panel/guia")}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 text-gray-600 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200 cursor-pointer"
                             aria-label="Ver instrucciones"
                         >
                             <CircleHelp size={14} className="flex-shrink-0 dark:text-gray-400" />
-                            <span className="text-xs font-medium dark:text-gray-400 whitespace-nowrap">Instrucciones</span>
+                            <span className="text-xs font-medium dark:text-gray-400 whitespace-nowrap pb-0.5">Instrucciones</span>
                         </button>
                     )}
                 </div>

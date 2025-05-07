@@ -17,7 +17,7 @@ function NewReqPage() {
 
     return (
         <>
-            <main className="pt-20 dark:bg-gray-900 min-h-dvh">
+            <main className="pt-20 dark:bg-black min-h-dvh">
                 <div className="max-w-7xl mx-auto py-3 px-4">
                     <HeaderPanel isReq={true} />
                     <FormNewReq />
