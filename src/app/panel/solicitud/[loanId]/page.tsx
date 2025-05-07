@@ -248,7 +248,7 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
                                         className="rounded-full drop-shadow-md object-cover aspect-square overflow-hidden"
                                     />
                                     <div>
-                                        <p className="font-medium text-gray-800 dark:text-gray-100">David Vasquez Mahecha</p>
+                                        <p className="font-medium text-gray-800 dark:text-gray-100">{loan.user.names} {loan.user.firstLastName} { loan.user.secondLastName}</p>
                                         <p onClick={() => router.push('/panel/perfil')} className="text-xs text-gray-400 hover:text-gray-500 dark:text-gray-400 cursor-pointer">Ir al perfil</p>
                                     </div>
                                 </div>
@@ -262,7 +262,7 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Mail className="drop-shadow-md dark:text-gray-200" size={15} />
-                                        <p className="text-sm text-gray-600 dark:text-gray-300">davidvasquezmahecha@gmail.com</p>
+                                        <p className="text-sm text-gray-600 dark:text-gray-300">{loan.user.email}</p>
                                     </div>
                                 </div>
                             </div>
