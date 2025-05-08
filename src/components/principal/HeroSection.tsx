@@ -11,7 +11,7 @@ function HeroSection() {
     const DirectToNewReq = () => router.push("/panel/nueva-solicitud");
 
     return (
-        <main className="min-h-dvh dark:bg-gray-900 flex flex-wrap px-[5%]">
+        <main className="min-h-dvh dark:bg-black flex flex-wrap px-[5%]">
             <div className="flex justify-start basis-[400px] grow">
                 <div className="flex justify-start sm:pt-0 pt-20">
                     <Image
@@ -33,7 +33,7 @@ function HeroSection() {
                         className="drop-shadow-md dark:invert dark:brightness-[0.87] dark:hue-rotate-180"
                     />
                 </div>
-                <p className="font-thin text-gray-500">Facilitando el crecimiento de los trabajadores agrícolas con créditos oportunos y servicios de deuda acorde a sus ingresos. Construyendo confianza y apoyando su desarrollo familiar y social.</p>
+                <p className="font-thin text-gray-500 dark:text-gray-300">Facilitando el crecimiento de los trabajadores agrícolas con créditos oportunos y servicios de deuda acorde a sus ingresos. Construyendo confianza y apoyando su desarrollo familiar y social.</p>
                 <div className="sm:flex sm:justify-start">
                     <button className="border border-green-100 dark:border-transparent dark:hover:bg-gray-700 dark:hover:border-transparent hover:border-green-200 flex flex-row text-sm px-3 py-2 bg-green-50 dark:bg-gray-800 rounded-md text-green-500 font-normal hover:bg-green-100 cursor-pointer gap-2">
                         <p onClick={DirectToNewReq} className="font-thin drop-shadow-sm">Solicita un prestamo ahora</p>

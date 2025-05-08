@@ -79,7 +79,7 @@ function SolutionSelection() {
   ];
 
   return (
-    <main className="min-h-dvh px-[5%] pt-20 dark:bg-gray-900">
+    <main className="min-h-dvh px-[5%] pt-20 dark:bg-black">
       <div className="space-y-2 mb-16">
         <h3 className="font-semibold text-center text-xl sm:text-5xl text-gray-700 dark:text-gray-200">
           Soluciones Financieras a Tu Alcance

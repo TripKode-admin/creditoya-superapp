@@ -9,7 +9,7 @@ function StepsComponent() {
 
     return (
         <>
-            <main className="min-h-dvh dark:bg-gray-900 pt-20 space-y-2 grid place-content-center px-[5%]">
+            <main className="min-h-dvh dark:bg-black pt-20 space-y-2 grid place-content-center px-[5%]">
                 <div className="flex flex-col">
                     <div className="mb-10 space-y-2">
                         <h3 className="text-center font-semibold text-xl sm:text-5xl text-gray-700 dark:text-gray-200">¡Solicita tu credito en menos de 5 minutos!</h3>

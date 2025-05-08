@@ -40,7 +40,7 @@ function AdvantagesComponent() {
     ]
     return (
         <>
-            <main className="min-h-dvh dark:bg-gray-900 px-[5%] grid place-content-center pt-20">
+            <main className="min-h-dvh dark:bg-black px-[5%] grid place-content-center pt-20">
                 <div className="flex flex-wrap gap-10">
                     {contentLists.map((content, index) => (
                         <div className="flex flex-col basis-[400px] grow gap-2" key={index}>

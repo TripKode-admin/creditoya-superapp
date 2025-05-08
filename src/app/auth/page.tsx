@@ -28,9 +28,9 @@ function AuthPage() {
     } = useAuth();
 
     return (
-        <main className="flex min-h-screen dark:bg-gray-900">
+        <main className="flex min-h-screen dark:bg-black">
             {/* Imagen a la izquierda */}
-            <div className="hidden md:flex w-1/2 dark:bg-gray-900 items-center justify-center">
+            <div className="hidden md:flex w-1/2 dark:bg-black items-center justify-center">
                 <div className="text-center">
                     <div className="mb-6 flex justify-center">
                         <Image
@@ -50,10 +50,10 @@ function AuthPage() {
             </div>
 
             {/* Formulario a la derecha */}
-            <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-8 dark:bg-gray-900 overflow-y-auto">
+            <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-8 dark:bg-black overflow-y-auto">
                 <div className="w-full max-w-md space-y-4">
                     {/* Logo móvil (visible solo en móvil) */}
-                    <div className="md:hidden flex justify-center mb-4">
+                    <div className="md:hidden flex justify-center mb-4 sm:pt-0 pt-20">
                         <Image
                             src={logoCY}
                             alt="Logo"
@@ -64,11 +64,11 @@ function AuthPage() {
                         />
                     </div>
 
-                    <div className="space-y-1">
-                        <h1 className="text-xl font-medium text-gray-700 dark:text-gray-200">
+                    <div className="space-y-1 mb-16">
+                        <h1 className="text-xl font-medium text-gray-700 dark:text-gray-200 text-center">
                             {isLogin ? "Bienvenido de nuevo" : "Registro"}
                         </h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
                             {isLogin ? "Ingresa tus credenciales para acceder" : "Completa tus datos para crear una cuenta"}
                         </p>
                     </div>
