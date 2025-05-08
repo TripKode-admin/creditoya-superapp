@@ -129,7 +129,7 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
             }
 
             {loan.EventLoanApplication && loan.EventLoanApplication.length !== 0 && loan.EventLoanApplication.map(events => (
-                events.type == "DOCS_REJECT" && events.isAnswered == false && <CardDocsReject loan={loan} />
+                events.type == "DOCS_REJECT" && events.isAnswered == false && <CardDocsReject key={events.id} loan={loan} />
             ))}
 
             {/* Main Content - Two Column Grid */}
