@@ -124,7 +124,7 @@ export type ILoanApplication = {
     requestedAmount: string;
     reasonReject?: string;
     newCantity?: string;
-    newAmountOption?: boolean;
+    newCantityOpt?: boolean;
     hasBankSavingsAccount: boolean;
     bankNumberAccount: string;
     entity: string;
