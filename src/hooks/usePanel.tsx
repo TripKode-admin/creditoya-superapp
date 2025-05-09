@@ -1,7 +1,7 @@
 "use client";
 
 import { useClientAuth } from "@/context/AuthContext";
-import { ILoanApplication, User } from "@/types/full";
+import { ILoanApplication, User, UserCompany } from "@/types/full";
 import axios from "axios";
 import { useEffect, useState, useTransition } from "react";
 import useLoadingState from "./useLoading";
@@ -175,6 +175,12 @@ function usePanel(): UsePanelReturn {
                 completed: isCompleted
             });
         }
+
+        // Verificar si la empresa está asignada
+        statuses.push({
+            name: "Empresa",
+            completed: userData.currentCompanie !== UserCompany.SIN_ASIGNAR
+        });
 
         // Verificar campos de documentos
         if (userData.Document && userData.Document.length > 0) {

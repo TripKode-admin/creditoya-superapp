@@ -1,36 +1,42 @@
 import { ILoanApplication } from "@/types/full"
 import { Files } from "lucide-react"
 import DocumentCard from "./DocumentCard"
+import { useState } from "react";
 
 function DocumentsRequired({ loan }: { loan: ILoanApplication }) {
+    // State to track uploaded documents
+    const [uploadedDocs, setUploadedDocs] = useState({
+        laborCard: null,
+        firstFlyer: null,
+        secondFlyer: null,
+        thirdFlyer: null
+    });
 
-    /**
-     * Maneja la subida de un documento
-     * @param type Tipo de documento
-     * @param file Archivo a subir
-     */
-    const handleUploadDocument = async (type: string, file: File) => {
-        try {
-            // Aquí iría la lógica para subir el archivo
-            console.log(`Subiendo documento ${type}:`, file.name);
-
-            // Ejemplo de FormData para enviar a API
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('documentType', type);
-            formData.append('loanId', loan.id);
-
-            // Llamada API
-            // const response = await axios.post('/api/documents/upload', formData);
-
-            // Actualizamos el estado local o recargamos datos
-            // refreshLoanData();
-
-            return true;
-        } catch (error) {
-            console.error("Error al subir documento:", error);
-            return false;
+    // Handle successful upload
+    const handleUploadSuccess = (documentType: string, data: any) => {
+        console.log(`Documento ${documentType} subido exitosamente:`, data);
+        
+        // Update the state based on document type
+        switch (documentType) {
+            case 'labor_card':
+                setUploadedDocs(prev => ({ ...prev, laborCard: data }));
+                break;
+            case 'fisrt_flyer': // Note: this typo is in the original code
+                setUploadedDocs(prev => ({ ...prev, firstFlyer: data }));
+                break;
+            case 'second_flyer':
+                setUploadedDocs(prev => ({ ...prev, secondFlyer: data }));
+                break;
+            case 'third_flyer':
+                setUploadedDocs(prev => ({ ...prev, thirdFlyer: data }));
+                break;
         }
+    };
+
+    // Handle upload error
+    const handleUploadError = (errorMessage: string) => {
+        console.error('Error al subir documento:', errorMessage);
+        // Implement error handling (show notification, etc.)
     };
 
     return (
@@ -46,35 +52,39 @@ function DocumentsRequired({ loan }: { loan: ILoanApplication }) {
             </div>
             <div className="space-y-3">
                 <DocumentCard
+                    title="Carta Laboral"
+                    value={loan.upid_labor_card}
+                    documentUrl={loan.labor_card}
+                    loanId={loan.id}
+                    onUploadSuccess={handleUploadSuccess}
+                    onUploadError={handleUploadError}
+                />
+                
+                <DocumentCard
                     title="Primer Volante de Pago"
                     value={loan.upid_first_flyer}
-                    showButton={!!loan.upid_first_flyer}
                     documentUrl={loan.fisrt_flyer}
-                    onUpload={(file) => handleUploadDocument('first_flyer', file)}
+                    loanId={loan.id}
+                    onUploadSuccess={handleUploadSuccess}
+                    onUploadError={handleUploadError}
                 />
-
+                
                 <DocumentCard
                     title="Segundo Volante de Pago"
                     value={loan.upid_second_flyer}
-                    showButton={!!loan.upid_second_flyer}
                     documentUrl={loan.second_flyer}
-                    onUpload={(file) => handleUploadDocument('second_flyer', file)}
+                    loanId={loan.id}
+                    onUploadSuccess={handleUploadSuccess}
+                    onUploadError={handleUploadError}
                 />
-
+                
                 <DocumentCard
                     title="Tercer Volante de Pago"
                     value={loan.upid_third_flyer}
-                    showButton={!!loan.upid_third_flyer}
                     documentUrl={loan.third_flyer}
-                    onUpload={(file) => handleUploadDocument('third_flyer', file)}
-                />
-
-                <DocumentCard
-                    title="Carta laboral"
-                    value={loan.upid_labor_card}
-                    showButton={!!loan.upid_labor_card}
-                    documentUrl={loan.labor_card}
-                    onUpload={(file) => handleUploadDocument('labor_card', file)}
+                    loanId={loan.id}
+                    onUploadSuccess={handleUploadSuccess}
+                    onUploadError={handleUploadError}
                 />
             </div>
         </div>
