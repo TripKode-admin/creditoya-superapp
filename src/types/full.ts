@@ -8,7 +8,7 @@ export enum UserCompany {
     PICHICHI_SAS = "pichichi_sas",
     PICHICHI_COORTE = "pichichi_coorte",
     VALOR_AGREGADO = "valor_agregado",
-    SIN_ASIGNAR = 'sin_asignar',
+    NO = 'no',
 }
 
 export enum DocumentType {

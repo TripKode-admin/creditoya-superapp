@@ -179,7 +179,7 @@ function usePanel(): UsePanelReturn {
         // Verificar si la empresa está asignada
         statuses.push({
             name: "Empresa",
-            completed: userData.currentCompanie !== UserCompany.SIN_ASIGNAR
+            completed: userData.currentCompanie !== UserCompany.NO
         });
 
         // Verificar campos de documentos
