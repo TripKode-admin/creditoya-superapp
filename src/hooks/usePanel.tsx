@@ -88,7 +88,7 @@ function usePanel(): UsePanelReturn {
      */
     const getLatestLoan = async (): Promise<void> => {
         if (!user?.id) {
-            console.log("No hay ID de usuario disponible");
+            // console.log("No hay ID de usuario disponible");
             return;
         }
 

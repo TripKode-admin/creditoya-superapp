@@ -100,7 +100,7 @@ export const ClientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const res = await axios.post("/api/auth/register", userData);
             const { user } = res.data.data;
 
-            console.log("register: ", res)
+            // console.log("register: ", res)
 
             if (!user) {
                 throw new Error('Error en el registro');

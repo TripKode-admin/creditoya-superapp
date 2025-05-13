@@ -40,7 +40,7 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
         return company.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
     };
 
-    console.log("current Loan: ", loan)
+    // console.log("current Loan: ", loan)
 
     // Si está cargando, mostrar un indicador de carga
     if (loading) return <LoadingPanel message="Cargando datos de la solicitud de prestamo" />

@@ -43,7 +43,7 @@ function usePanelApi() {
 
         // Check if we've already updated this field with this value
         if (lastUpdatedValues.current[fieldName] === value) {
-            console.log(`Field ${fieldName} already updated with this value`);
+            // console.log(`Field ${fieldName} already updated with this value`);
             return true;
         }
 
@@ -56,7 +56,7 @@ function usePanelApi() {
                 date.setHours(12, 0, 0, 0);
                 // Formato ISO completo
                 value = date.toISOString();
-                console.log("Formato de fecha convertido:", value);
+                // console.log("Formato de fecha convertido:", value);
             } catch (error) {
                 console.error("Error al formatear la fecha:", error);
                 return false;
@@ -94,8 +94,8 @@ function usePanelApi() {
                 payload = { field: fieldName, value };
             }
 
-            // Log del payload para depuración
-            console.log(`Enviando payload para ${fieldName}:`, payload);
+            // // Log del payload para depuración
+            // console.log(`Enviando payload para ${fieldName}:`, payload);
 
             // Make the API request
             const response = await axios.put(
@@ -108,7 +108,7 @@ function usePanelApi() {
             const isSuccess = response.data?.success === true;
 
             if (isSuccess) {
-                console.log(`Field ${fieldName} updated successfully to:`, value);
+                // console.log(`Field ${fieldName} updated successfully to:`, value);
                 lastUpdatedValues.current[fieldName] = value;
 
                 // Solo refrescar los datos si no hay un refresh en progreso
@@ -125,7 +125,7 @@ function usePanelApi() {
                 console.error("API returned error:", response.data?.error);
             }
 
-            return isSuccess; // Just return the API success status, validity is tracked separately
+            return isSuccess;
         } catch (error: any) {
             console.error("Error updating field:", error.response?.data || error.message || error);
             return false;

@@ -1,4 +1,3 @@
-// Enums
 export enum UserCompany {
     INCAUCA_SAS = "incauca_sas",
     INCAUCA_COSECHA = "incauca_cosecha",

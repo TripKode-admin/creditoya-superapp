@@ -59,12 +59,12 @@ function useFormReq() {
         return () => clearTimeout(timer);
     }, []);
 
-    console.log("loan Data: ", formData)
+    // console.log("loan Data: ", formData)
 
     // Handle bank selection
     const handleBankSelect = (option: string) => {
         setFormData(prev => ({ ...prev, entity: option }));
-        console.log("Selected bank:", option);
+        // console.log("Selected bank:", option);
     };
 
     // Handle bank account number input
@@ -80,7 +80,7 @@ function useFormReq() {
     // Handle signature
     const handleSignature = (signatureData: string | null) => {
         setFormData(prev => ({ ...prev, signature: signatureData }));
-        console.log("Signature saved:", signatureData ? "✓" : "✗");
+        // console.log("Signature saved:", signatureData ? "✓" : "✗");
     };
 
     // Handle file uploads
@@ -108,7 +108,7 @@ function useFormReq() {
 
         try {
             setIsCreating(true);
-            console.log("Formulario enviado:", formData);
+            // console.log("Formulario enviado:", formData);
 
             // Create a FormData object to handle file uploads
             const apiFormData = new FormData();
@@ -141,7 +141,7 @@ function useFormReq() {
             });
 
             if (response.data.success) {
-                console.log("data loan: ", response.data.loanDetails);
+                // console.log("data loan: ", response.data.loanDetails);
                 // Store loan data in localStorage with 15 minute expiration
                 storeLoanData(response.data.loanDetails);
                 setPreLoanId(response.data.loanDetails.loanId);
@@ -173,7 +173,7 @@ function useFormReq() {
 
         const resToken = await handleVerifyToken(preToken);
 
-        console.log("verification token response: ", resToken);
+        // console.log("verification token response: ", resToken);
 
         if (resToken) {
             setIsSuccessPreCreate(false);

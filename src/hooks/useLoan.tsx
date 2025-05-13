@@ -29,7 +29,7 @@ function useLoan({ loanId }: { loanId: string }) {
                 { withCredentials: true },
             );
 
-            console.log("Respuesta del servidor:", res.data);
+            // console.log("Respuesta del servidor:", res.data);
 
             if (res.data.success === false) throw new Error(res.data.error);
 
@@ -83,7 +83,7 @@ function useLoan({ loanId }: { loanId: string }) {
                 { withCredentials: true }
             );
 
-            console.log(response.data);
+            // console.log(response.data);
 
             // Siempre actualizar el estado después de una respuesta exitosa
             setTimeout(() => { window.location.reload(); }, 5000)

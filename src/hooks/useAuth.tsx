@@ -18,14 +18,14 @@ function useAuth() {
     // Agregamos estado para la empresa seleccionada
     const [currentCompanie, setCurrentCompanie] = useState<UserCompany | null>(null);
 
-    console.log(
-        [ email],
-        [ password],
-        [ names ],
-        [ firstLastName ],
-        [ secondLastName ],
-        [ currentCompanie ]
-    )
+    // console.log(
+    //     [ email],
+    //     [ password],
+    //     [ names ],
+    //     [ firstLastName ],
+    //     [ secondLastName ],
+    //     [ currentCompanie ]
+    // )
 
     // Usamos el estado de carga del contexto de autenticación
     const isLoading = authContext.isLoading;
