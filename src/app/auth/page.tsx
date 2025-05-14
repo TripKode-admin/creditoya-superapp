@@ -5,6 +5,7 @@ import logoCY from "@/assets/logos/only_object_logo.png";
 import useAuth from "@/hooks/useAuth";
 import SelectEmpresa from "@/components/panel/selectCompani";
 import { UserCompany } from "@/types/full";
+import { useState } from "react";
 
 function AuthPage() {
     const {
@@ -26,6 +27,13 @@ function AuthPage() {
         handleCompanyChange,
         currentCompanie
     } = useAuth();
+
+    const [isRecovery, setIsRecovery] = useState(false)
+
+    const generateMagicRecovery = ({ isCancel }: { isCancel?: boolean }) => {
+        if ( isCancel && isCancel === true) setIsRecovery(false);
+        else if ( isCancel === false || !isCancel ) setIsRecovery(true)
+    }
 
     return (
         <main className="flex flex-col md:flex-row min-h-screen dark:bg-black overflow-hidden">
@@ -68,10 +76,14 @@ function AuthPage() {
 
                     <div className="space-y-1 mb-6 mt-10">
                         <h1 className="text-xl font-medium text-gray-700 dark:text-gray-200 text-center">
-                            {isLogin ? "Bienvenido de nuevo" : "Registro"}
+                            {isLogin && !isRecovery && "Bienvenido de nuevo"}
+                            {!isLogin && !isRecovery && "Registro"}
+                            {isRecovery && "Recuperacion de contraseña"}
                         </h1>
                         <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-                            {isLogin ? "Ingresa tus credenciales para acceder" : "Completa tus datos para crear una cuenta"}
+                            {isLogin && !isRecovery && "Ingresa tus credenciales para acceder"}
+                            {!isLogin && !isRecovery && "Completa tus datos para crear una cuenta"}
+                            {isRecovery && "Recupera el acceso a tu cuenta y a tus datos personales"}
                         </p>
                     </div>
 
@@ -82,7 +94,7 @@ function AuthPage() {
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-3">
-                        {!isLogin && (
+                        {!isLogin && !isRecovery && (
                             <>
                                 <div>
                                     <label htmlFor="names" className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
@@ -158,27 +170,37 @@ function AuthPage() {
                             />
                         </div>
 
-                        <div>
-                            <label htmlFor="password" className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
-                                Contraseña
-                            </label>
-                            <input
-                                id="password"
-                                name="password"
-                                type="password"
-                                autoComplete={isLogin ? "current-password" : "new-password"}
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full text-base text-gray-700 dark:text-gray-200 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-green-400 focus:border-green-400"
-                                placeholder="••••••••"
-                            />
-                        </div>
+                        {!isRecovery && (
+                            <div>
+                                <label htmlFor="password" className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
+                                    Contraseña
+                                </label>
+                                <input
+                                    id="password"
+                                    name="password"
+                                    type="password"
+                                    autoComplete={isLogin ? "current-password" : "new-password"}
+                                    required
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full text-base text-gray-700 dark:text-gray-200 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-green-400 focus:border-green-400"
+                                    placeholder="••••••••"
+                                />
+                            </div>
+                        )}
 
-                        {isLogin && (
-                            <div className="text-right">
+                        {isLogin && !isRecovery && (
+                            <div className="text-right" onClick={() => generateMagicRecovery({})}>
                                 <button type="button" className="text-xs text-green-600 dark:text-green-400 hover:underline">
                                     ¿Olvidaste tu contraseña?
+                                </button>
+                            </div>
+                        )}
+
+                        {isRecovery && (
+                            <div className="text-right" onClick={() => generateMagicRecovery({ isCancel: true })}>
+                                <button type="button" className="text-xs text-green-600 dark:text-green-400 hover:underline">
+                                    Cancelar recuperacion de contraseña
                                 </button>
                             </div>
                         )}

@@ -2,7 +2,6 @@ import { validateToken } from '@/lib/validate-token';
 import axios from 'axios';
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from "next/headers"
-import { User } from '@/types/full';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

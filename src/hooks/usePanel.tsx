@@ -152,7 +152,6 @@ function usePanel(): UsePanelReturn {
             "residence_address": "Dirección de residencia",
             "genre": "Género",
             "phone_whatsapp": "Numero de WhatsApp",
-            "phone": "Numero de celular",
         };
 
         // Mapeo de campos de documentos
