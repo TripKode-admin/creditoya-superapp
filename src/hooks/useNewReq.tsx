@@ -218,7 +218,9 @@ function useFormReq() {
 
     const sentToken = useCallback(async () => {
         if (!state.preToken || state.preToken.length !== 6) {
-            state.preToken?.length !== 6 && console.warn("El token debe tener 6 digitos");
+            if (state.preToken?.length !== 6) {
+                console.warn("El token debe tener 6 digitos");
+            }
             return;
         }
 

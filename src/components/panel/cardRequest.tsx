@@ -10,18 +10,18 @@ function CardRequest({ loan }: { loan: ILoanApplication }) {
 
     // Formatear fecha
     const formatDate = (date: Date) => {
-        return {
-            formatted: date.toLocaleString('es-ES', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric'
-            }),
-            time: date.toLocaleString('es-ES', {
-                hour: 'numeric',
-                minute: 'numeric'
-            }),
-            ampm: date.getHours() >= 12 ? 'PM' : 'AM'
-        };
+        const day = date.getDate();
+        const year = date.getFullYear();
+        const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+        const month = capitalize(date.toLocaleDateString('es-ES', { month: 'long' }));
+        const hour = date.toLocaleTimeString('es-ES', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        }).replace('.', '');
+
+
+        return `${day} de ${month} del ${year} a las ${hour}`;
     };
 
     const CountEvents = () => {
@@ -68,7 +68,7 @@ function CardRequest({ loan }: { loan: ILoanApplication }) {
             {/* Fechas en formato ultra compacto */}
             <div className="mt-2 flex items-center text-xs text-gray-500 dark:text-gray-400">
                 <Calendar size={12} className="mr-1" />
-                <span>Creado: {createdDate.formatted}, {createdDate.time} {createdDate.ampm}</span>
+                <span>Creado: {createdDate}</span>
             </div>
         </div>
     );
