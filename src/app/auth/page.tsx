@@ -28,32 +28,34 @@ function AuthPage() {
     } = useAuth();
 
     return (
-        <main className="flex min-h-screen dark:bg-black">
-            {/* Imagen a la izquierda */}
-            <div className="hidden md:flex w-1/2 dark:bg-black items-center justify-center">
-                <div className="text-center">
-                    <div className="mb-6 flex justify-center">
-                        <Image
-                            src={logoCY}
-                            alt="Logo"
-                            width={180}
-                            height={180}
-                            priority
-                            className="object-contain drop-shadow-md"
-                        />
+        <main className="flex flex-col md:flex-row min-h-screen dark:bg-black overflow-hidden">
+            {/* Panel izquierdo (logo e información) */}
+            <div className="hidden md:block md:w-1/2 lg:w-2/5 dark:bg-black p-4 fixed left-0 top-0 h-full">
+                <div className="flex flex-col justify-center items-center h-full">
+                    <div className="max-w-md mx-auto text-center">
+                        <div className="mb-6 flex justify-center">
+                            <Image
+                                src={logoCY}
+                                alt="Logo"
+                                width={120}
+                                height={120}
+                                priority
+                                className="object-contain drop-shadow-md"
+                            />
+                        </div>
+                        <h2 className="text-xl lg:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Credito Ya</h2>
+                        <p className="text-sm lg:text-base text-gray-600 dark:text-gray-300 max-w-xs mx-auto font-thin">
+                            Gestiona tu solicitud de préstamo desde cualquier lugar, en cualquier momento.
+                        </p>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Credito Ya</h2>
-                    <p className="text-gray-600 dark:text-gray-300 max-w-xs mx-auto font-thin">
-                        Gestiona tu solicitud de préstamo desde cualquier lugar, en cualquier momento.
-                    </p>
                 </div>
             </div>
 
-            {/* Formulario a la derecha */}
-            <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-8 dark:bg-black overflow-y-auto">
-                <div className="w-full max-w-md space-y-4">
+            {/* Panel derecho (formulario) */}
+            <div className="w-full md:w-1/2 md:ml-auto lg:w-3/5 flex items-center justify-center p-4 md:p-6 lg:p-8 dark:bg-black min-h-screen overflow-y-auto">
+                <div className="w-full max-w-md py-6">
                     {/* Logo móvil (visible solo en móvil) */}
-                    <div className="md:hidden flex justify-center mb-4 sm:pt-0 pt-20">
+                    <div className="md:hidden flex justify-center mb-4 sm:pt-0 pt-8">
                         <Image
                             src={logoCY}
                             alt="Logo"
@@ -64,7 +66,7 @@ function AuthPage() {
                         />
                     </div>
 
-                    <div className="space-y-1 mb-16">
+                    <div className="space-y-1 mb-6 mt-10">
                         <h1 className="text-xl font-medium text-gray-700 dark:text-gray-200 text-center">
                             {isLogin ? "Bienvenido de nuevo" : "Registro"}
                         </h1>
@@ -74,12 +76,12 @@ function AuthPage() {
                     </div>
 
                     {error && (
-                        <div className="p-2 text-sm bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md">
+                        <div className="p-2 text-sm bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md mb-4">
                             {error}
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className={`${!isLogin ? 'space-y-3' : 'space-y-4'}`}>
+                    <form onSubmit={handleSubmit} className="space-y-3">
                         {!isLogin && (
                             <>
                                 <div>
@@ -184,13 +186,13 @@ function AuthPage() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full mt-2 py-2 px-4 bg-green-500 text-white text-sm font-medium rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition-colors disabled:opacity-50"
+                            className="w-full mt-4 py-2 px-4 bg-green-500 text-white text-sm font-medium rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition-colors disabled:opacity-50"
                         >
                             {isLogin ? (isLoading ? "Ingresando..." : "Ingresar") : (isLoading ? "Registrando..." : "Registrarse")}
                         </button>
                     </form>
 
-                    <div className={`${isLogin ? 'mt-4' : 'mt-2'} text-center`}>
+                    <div className="mt-4 text-center pb-8">
                         <p className="text-gray-600 dark:text-gray-400 text-xs">
                             {isLogin ? "¿No tienes una cuenta?" : "¿Ya tienes una cuenta?"}
                             <button

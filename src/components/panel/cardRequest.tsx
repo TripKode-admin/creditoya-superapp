@@ -1,6 +1,6 @@
 import { BankTypes, handleKeyToStringBank } from "@/handlers/stringToBank";
 import { stringToPriceCOP } from "@/handlers/stringToCop";
-import { ILoanApplication } from "@/types/full";
+import { eventLoanApplication, ILoanApplication } from "@/types/full";
 import { Bell, ChevronRight, Calendar } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -24,6 +24,12 @@ function CardRequest({ loan }: { loan: ILoanApplication }) {
         };
     };
 
+    const CountEvents = () => {
+        return loan.EventLoanApplication.filter(
+            (events) => events.isAnswered === false
+        ).length
+    }
+
     const createdDate = formatDate(new Date(loan.created_at));
 
     return (
@@ -32,7 +38,7 @@ function CardRequest({ loan }: { loan: ILoanApplication }) {
             <div className="flex justify-between items-center mb-2">
                 <div className="flex items-center gap-2">
                     <span className="text-xs bg-green-50/80 dark:bg-green-900/20 px-2 py-0.5 rounded-full text-green-600 dark:text-green-400 border border-green-100/70 dark:border-green-800/40">
-                        Pendiente
+                        {loan.status}
                     </span>
                     <span className="text-xl font-medium text-gray-700 dark:text-gray-200">
                         {stringToPriceCOP(loan.cantity)}
@@ -41,7 +47,7 @@ function CardRequest({ loan }: { loan: ILoanApplication }) {
                 <div className="flex items-center gap-2">
                     <button onClick={(e) => e.stopPropagation()} className="p-1.5 rounded-full bg-gray-50/80 dark:bg-gray-700/60 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-100/80 dark:border-gray-600/80 cursor-pointer transition-all duration-200 flex items-center">
                         <Bell size={14} className="text-gray-500 dark:text-gray-400" />
-                        <span className="ml-1 text-xs text-gray-600 dark:text-gray-300">{loan.EventLoanApplication.length}</span>
+                        <span className="ml-1 text-xs text-gray-600 dark:text-gray-300">{CountEvents()}</span>
                     </button>
                     <ChevronRight size={16} className="text-green-500 dark:text-green-400" />
                 </div>

@@ -62,7 +62,7 @@ export type User = {
     secondLastName: string;
     currentCompanie: UserCompany;
     avatar: string;
-    phone: string;
+    phone: string
     residence_phone_number: string;
     phone_whatsapp: string;
     birth_day?: Date;
@@ -112,6 +112,7 @@ export type ILoanApplication = {
     id: string;
     userId: string;
     employeeId?: string;
+    phone: string
     cantity: string;
     fisrt_flyer?: string;
     upid_first_flyer?: string;

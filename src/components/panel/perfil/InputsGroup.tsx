@@ -103,15 +103,6 @@ function FormDatesPerfil() {
                 />
 
                 <FormInput
-                    label="Numero de Celular"
-                    initialValue={formatFieldValue('phone', userComplete.phone)}
-                    required={true}
-                    onUpdate={handleUpdate}
-                    fieldName="phone"
-                    isValid={isFieldValid('phone', userComplete.phone)}
-                />
-
-                <FormInput
                     label="Numero de Whatsapp"
                     initialValue={formatFieldValue('phone_whatsapp', userComplete.phone_whatsapp)}
                     required={true}

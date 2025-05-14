@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
         const formData = await request.formData();
 
         // Extract the form fields from formData
+        const phone = formData.get('phone') as string;
         const signature = formData.get('signature') as string;
         const userId = formData.get('user_id') as string;
         const entity = formData.get('entity') as string;
@@ -58,6 +59,7 @@ export async function POST(request: NextRequest) {
         const apiFormData = new FormData();
 
         // Add body fields to the API request - these will go in the request body
+        apiFormData.append('phone', phone);
         apiFormData.append('signature', signature);
         apiFormData.append('entity', entity);
         apiFormData.append('bankNumberAccount', bankNumberAccount);

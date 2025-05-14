@@ -16,13 +16,14 @@ function FormNewReq() {
         IsSuccessPreCreate,
         PreLoanId,
         formData,
+        acceptedTerms,
         handleBankAccountChange,
         handleBankSelect,
         handleSubmit,
         handleCantityChange,
         handleSignature,
         handleFileUpload,
-        acceptedTerms,
+        handleNumberPhone,
         handleTermsChange
     } = useFormReq();
 
@@ -42,6 +43,12 @@ function FormNewReq() {
         return (
             <form onSubmit={handleSubmit}>
                 <div className="mt-8 space-y-4">
+                    <DefaultInput
+                        title={"Numero de celular"}
+                        onChange={handleNumberPhone}
+                        value={formData.phone}
+                        required
+                    />
                     <SelectBanks select={handleBankSelect} />
                     <DefaultInput
                         title={"Numero de cuenta"}

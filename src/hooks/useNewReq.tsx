@@ -1,11 +1,15 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import usePanel from "./usePanel";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
+// Tipos bien definidos
+type FileField = 'labor_card' | 'fisrt_flyer' | 'second_flyer' | 'third_flyer';
+
 interface FormDataProps {
+    phone: string;
     entity: string;
     bankNumberAccount: string;
     cantity: string;
@@ -17,246 +21,253 @@ interface FormDataProps {
     third_flyer: File | null;
 }
 
+interface LoanStorageData {
+    data: any;
+    expiration: number;
+}
+
+interface LoanState {
+    formData: FormDataProps;
+    acceptedTerms: boolean;
+    isCreating: boolean;
+    isCheckingStorage: boolean;
+    isSuccessPreCreate: boolean;
+    preLoanId: string | null;
+    preToken: string | null;
+    isSuccessVerifyToken: boolean;
+}
+
+const STORAGE_KEY = 'loanSuccess';
+const STORAGE_EXPIRATION = 15 * 60 * 1000; // 15 minutos en milisegundos
+
+// Valores iniciales
+const initialFormData: FormDataProps = {
+    phone: "",
+    entity: "",
+    bankNumberAccount: "",
+    cantity: "",
+    signature: null,
+    labor_card: null,
+    fisrt_flyer: null,
+    second_flyer: null,
+    third_flyer: null,
+    terms_and_conditions: false,
+};
+
+const initialState: LoanState = {
+    formData: initialFormData,
+    acceptedTerms: false,
+    isCreating: true,
+    isCheckingStorage: true,
+    isSuccessPreCreate: false,
+    preLoanId: null,
+    preToken: null,
+    isSuccessVerifyToken: false
+};
+
 function useFormReq() {
     const { userComplete } = usePanel();
-
-    const [formData, setFormData] = useState<FormDataProps>({
-        entity: "",
-        bankNumberAccount: "",
-        cantity: "",
-        signature: null,
-        labor_card: null,
-        fisrt_flyer: null,
-        second_flyer: null,
-        third_flyer: null,
-        terms_and_conditions: false,
-    });
-    const [acceptedTerms, setAcceptedTerms] = useState(false);
-    const [isCreating, setIsCreating] = useState<boolean>(true);
-    const [isCheckingStorage, setIsCheckingStorage] = useState<boolean>(true);
-    const [IsSuccessPreCreate, setIsSuccessPreCreate] = useState<boolean>(false);
-    const [PreLoanId, setPreLoanId] = useState<string | null>(null);
-    const [preToken, setPreToken] = useState<string | null>(null);
-    const [isSuccesVerifyToken, setIsSuccesVerifyToken] = useState<boolean>(false);
-
     const router = useRouter();
+    const [state, setState] = useState<LoanState>(initialState);
 
-    // Check localStorage on component mount
+    // Funciones utilitarias
+    const updateState = useCallback((updates: Partial<LoanState>) => {
+        setState(prev => ({ ...prev, ...updates }));
+    }, []);
+
+    const updateFormData = useCallback((updates: Partial<FormDataProps>) => {
+        setState(prev => ({
+            ...prev,
+            formData: { ...prev.formData, ...updates }
+        }));
+    }, []);
+
+    // Funciones para almacenamiento local
+    const storeLoanData = useCallback((data: any) => {
+        const storageData: LoanStorageData = {
+            data,
+            expiration: new Date().getTime() + STORAGE_EXPIRATION
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(storageData));
+    }, []);
+
+    const getLoanData = useCallback(() => {
+        const storedData = localStorage.getItem(STORAGE_KEY);
+        if (!storedData) return null;
+
+        const { data, expiration } = JSON.parse(storedData) as LoanStorageData;
+        if (new Date().getTime() > expiration) {
+            localStorage.removeItem(STORAGE_KEY);
+            return null;
+        }
+        return data;
+    }, []);
+
+    // Verificar localStorage al cargar
     useEffect(() => {
         const checkStoredLoanData = () => {
             const storedLoanData = getLoanData();
-            console.log(storedLoanData);
             if (storedLoanData) {
-                setPreLoanId(storedLoanData.loanId);
-                setIsSuccessPreCreate(true);
+                updateState({
+                    preLoanId: storedLoanData.loanId,
+                    isSuccessPreCreate: true
+                });
             }
-            setIsCheckingStorage(false);
-            setIsCreating(false);
+            updateState({
+                isCheckingStorage: false,
+                isCreating: false
+            });
         };
 
-        // Slight delay to show loading state
         const timer = setTimeout(checkStoredLoanData, 500);
         return () => clearTimeout(timer);
-    }, []);
+    }, [getLoanData, updateState]);
 
-    // console.log("loan Data: ", formData)
+    // Manejadores de eventos
+    const handleFieldChange = useCallback((field: keyof FormDataProps, value: any) => {
+        updateFormData({ [field]: value });
+    }, [updateFormData]);
 
-    // Handle bank selection
-    const handleBankSelect = (option: string) => {
-        setFormData(prev => ({ ...prev, entity: option }));
-        // console.log("Selected bank:", option);
-    };
+    const handleTermsChange = useCallback(() => {
+        const newValue = !state.acceptedTerms;
+        updateState({ acceptedTerms: newValue });
+        updateFormData({ terms_and_conditions: newValue });
+    }, [state.acceptedTerms, updateFormData, updateState]);
 
-    // Handle bank account number input
-    const handleBankAccountChange = (value: string) => {
-        setFormData(prev => ({ ...prev, bankNumberAccount: value }));
-    };
+    const handleFileUpload = useCallback((field: FileField, file: File | null) => {
+        updateFormData({ [field]: file });
+    }, [updateFormData]);
 
-    // Handle cantity input
-    const handleCantityChange = (value: string) => {
-        setFormData(prev => ({ ...prev, cantity: value }));
-    };
-
-    // Handle signature
-    const handleSignature = (signatureData: string | null) => {
-        setFormData(prev => ({ ...prev, signature: signatureData }));
-        // console.log("Signature saved:", signatureData ? "✓" : "✗");
-    };
-
-    // Handle file uploads
-    const handleFileUpload = (
-        field: 'labor_card' | 'fisrt_flyer' | 'second_flyer' | 'third_flyer',
-        file: File | null
-    ) => {
-        setFormData(prev => ({ ...prev, [field]: file }));
-    };
-
-    // Handle terms and conditions toggle
-    const handleTermsChange = () => {
-        const newValue = !acceptedTerms;
-        setAcceptedTerms(newValue);
-        setFormData(prev => ({ ...prev, terms_and_conditions: newValue }));
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
+    // Función para enviar el formulario
+    const handleSubmit = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!acceptedTerms) {
+        if (!state.acceptedTerms) {
             alert("Debes aceptar los términos y condiciones para continuar.");
             return;
         }
 
         try {
-            setIsCreating(true);
-            // console.log("Formulario enviado:", formData);
+            updateState({ isCreating: true });
 
-            // Create a FormData object to handle file uploads
             const apiFormData = new FormData();
 
-            // Append all files
-            if (formData.labor_card) apiFormData.append('labor_card', formData.labor_card);
-            if (formData.fisrt_flyer) apiFormData.append('fisrt_flyer', formData.fisrt_flyer);
-            if (formData.second_flyer) apiFormData.append('second_flyer', formData.second_flyer);
-            if (formData.third_flyer) apiFormData.append('third_flyer', formData.third_flyer);
+            // Archivos
+            const fileFields: FileField[] = ['labor_card', 'fisrt_flyer', 'second_flyer', 'third_flyer'];
+            fileFields.forEach(field => {
+                const file = state.formData[field];
+                if (file) apiFormData.append(field, file);
+            });
 
-            // Append signature as string
-            if (formData.signature) apiFormData.append('signature', formData.signature);
+            // Datos de texto
+            if (state.formData.signature) {
+                apiFormData.append('signature', state.formData.signature);
+            }
 
-            // Append user ID
+            apiFormData.append('phone', state.formData.phone);
             apiFormData.append('user_id', userComplete?.id as string);
-
-            // Append other form data fields
-            apiFormData.append('entity', formData.entity);
-            apiFormData.append('bankNumberAccount', formData.bankNumberAccount);
-            apiFormData.append('cantity', formData.cantity);
-            apiFormData.append('terms_and_conditions', formData.terms_and_conditions.toString());
+            apiFormData.append('entity', state.formData.entity);
+            apiFormData.append('bankNumberAccount', state.formData.bankNumberAccount);
+            apiFormData.append('cantity', state.formData.cantity);
+            apiFormData.append('terms_and_conditions', state.formData.terms_and_conditions.toString());
             apiFormData.append('isValorAgregado', (userComplete?.currentCompanie === "valor_agregado").toString());
 
-            // Make the request
             const response = await axios.post("/api/loan", apiFormData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
+                headers: { 'Content-Type': 'multipart/form-data' },
                 withCredentials: true
             });
 
             if (response.data.success) {
-                // console.log("data loan: ", response.data.loanDetails);
-                // Store loan data in localStorage with 15 minute expiration
                 storeLoanData(response.data.loanDetails);
-                setPreLoanId(response.data.loanDetails.loanId);
-                setIsSuccessPreCreate(true);
-                setIsCreating(false);
+                updateState({
+                    preLoanId: response.data.loanDetails.loanId,
+                    isSuccessPreCreate: true,
+                    isCreating: false
+                });
             } else {
                 alert("Error al crear el préstamo: " + response.data.error);
-                setIsCreating(false);
+                updateState({ isCreating: false });
             }
         } catch (error) {
             console.error("Error al enviar el formulario:", error);
             alert("Ocurrió un error al procesar tu solicitud. Por favor intenta nuevamente.");
-            setIsCreating(false);
+            updateState({ isCreating: false });
         }
-    };
+    }, [state.formData, state.acceptedTerms, userComplete, storeLoanData, updateState]);
 
-
-    const handleCodeChange = (code: string) => {
-        setPreToken(code);
-    };
-
-    const sentToken = async () => {
-        if (!preToken) return;
-
-        if (preToken?.length !== 6) {
-            console.warn("El token debe tener 6 digitos");
-            return;
-        }
-
-        const resToken = await handleVerifyToken(preToken);
-
-        // console.log("verification token response: ", resToken);
-
-        if (resToken) {
-            setIsSuccessPreCreate(false);
-            setPreLoanId(null);
-            localStorage.removeItem('loanSuccess');
-            setIsSuccesVerifyToken(true);
-
-            setTimeout(() => { router.push("/panel") }, 4000);
-        }
-
-        setPreToken(null);
-    }
-
-    const handleVerifyToken = async (token: string) => {
+    // Verificación de token
+    const handleVerifyToken = useCallback(async (token: string) => {
         try {
             const response = await axios.post(
                 "/api/loan/verify-token",
-                { preToken: token, preLoanId: PreLoanId, userId: userComplete?.id },
+                {
+                    preToken: token,
+                    preLoanId: state.preLoanId,
+                    userId: userComplete?.id
+                },
                 { withCredentials: true }
             );
 
-            if (response.data.success) {
-                return response.data.data;
-            } else {
-                alert("Error al verificar el token: " + response.data.error);
-            }
+            return response.data.success ? response.data.data : false;
         } catch (error) {
             console.error("Error al verificar el token:", error);
             alert("Ocurrió un error al verificar el token. Por favor intenta nuevamente.");
+            return false;
         }
-    }
+    }, [state.preLoanId, userComplete?.id]);
 
-    // Helper function to store loan data with expiration
-    const storeLoanData = (data: any) => {
-        const expirationTime = new Date().getTime() + 15 * 60 * 1000; // 15 minutes in milliseconds
-        const storageData = {
-            data,
-            expiration: expirationTime
-        };
-        localStorage.setItem('loanSuccess', JSON.stringify(storageData));
-    };
-
-    // Helper function to retrieve loan data if not expired
-    const getLoanData = () => {
-        const storedData = localStorage.getItem('loanSuccess');
-        if (!storedData) return null;
-
-        const { data, expiration } = JSON.parse(storedData);
-        const currentTime = new Date().getTime();
-
-        if (currentTime > expiration) {
-            // Data has expired, remove it
-            localStorage.removeItem('loanSuccess');
-            return null;
+    const sentToken = useCallback(async () => {
+        if (!state.preToken || state.preToken.length !== 6) {
+            state.preToken?.length !== 6 && console.warn("El token debe tener 6 digitos");
+            return;
         }
 
-        return data;
-    };
+        const resToken = await handleVerifyToken(state.preToken);
+
+        if (resToken) {
+            updateState({
+                isSuccessPreCreate: false,
+                preLoanId: null,
+                isSuccessVerifyToken: true,
+                preToken: null
+            });
+            localStorage.removeItem(STORAGE_KEY);
+            setTimeout(() => router.push("/panel"), 4000);
+        } else {
+            updateState({ preToken: null });
+        }
+    }, [state.preToken, handleVerifyToken, updateState, router]);
 
     return {
+        // Estados
         userComplete,
-        isCheckingStorage,
-        isCreating,
-        IsSuccessPreCreate,
-        setIsSuccessPreCreate,
-        PreLoanId,
-        setPreLoanId,
-        handleSubmit,
-        handleBankSelect,
-        handleBankAccountChange,
-        formData,
-        handleCantityChange,
-        handleSignature,
+        isCheckingStorage: state.isCheckingStorage,
+        isCreating: state.isCreating,
+        IsSuccessPreCreate: state.isSuccessPreCreate,
+        acceptedTerms: state.acceptedTerms,
+        PreLoanId: state.preLoanId,
+        formData: state.formData,
+        isSuccesVerifyToken: state.isSuccessVerifyToken,
+
+        // Manejadores de actualización
+        setIsSuccessPreCreate: (value: boolean) => updateState({ isSuccessPreCreate: value }),
+        setPreLoanId: (value: string | null) => updateState({ preLoanId: value }),
+        handleBankSelect: (option: string) => handleFieldChange('entity', option),
+        handleNumberPhone: (value: string) => handleFieldChange('phone', value),
+        handleBankAccountChange: (value: string) => handleFieldChange('bankNumberAccount', value),
+        handleCantityChange: (value: string) => handleFieldChange('cantity', value),
+        handleSignature: (value: string | null) => handleFieldChange('signature', value),
         handleFileUpload,
-        acceptedTerms,
         handleTermsChange,
+        handleCodeChange: (code: string) => updateState({ preToken: code }),
+        setPreToken: (value: string | null) => updateState({ preToken: value }),
+
+        // Funciones principales
+        handleSubmit,
         handleVerifyToken,
-        storeLoanData,
         sentToken,
-        handleCodeChange,
-        setPreToken,
-        isSuccesVerifyToken,
-    }
+        storeLoanData
+    };
 }
 
 export default useFormReq;
