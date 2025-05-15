@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useClientAuth } from "@/context/AuthContext"; // Asegúrate de ajustar la ruta correcta
 import { UserCompany } from "@/types/full";
+import axios from "axios";
 
 function useAuth() {
     const router = useRouter();
@@ -17,6 +18,9 @@ function useAuth() {
     const [secondLastName, setSecondLastName] = useState("");
     // Agregamos estado para la empresa seleccionada
     const [currentCompanie, setCurrentCompanie] = useState<UserCompany | null>(null);
+
+    const [isRecovery, setIsRecovery] = useState(false);
+    const [isActiveRecovery, setIsActiveRecovery] = useState(false);
 
     // console.log(
     //     [ email],
@@ -42,15 +46,9 @@ function useAuth() {
 
         try {
             if (isLogin) {
-                // Iniciar sesión usando el método del contexto
                 const success = await authContext.login(email, password);
-
-                if (success) {
-                    // Redirigir al panel del cliente si la autenticación fue exitosa
-                    window.location.href = "/panel"
-                }
+                if (success) window.location.href = "/panel"
             } else {
-                // Registrar un nuevo usuario usando el método del contexto
                 const userData = {
                     email,
                     password,
@@ -59,19 +57,40 @@ function useAuth() {
                     secondLastName,
                     currentCompanie
                 };
-
                 const success = await authContext.register(userData);
-
-                if (success) {
-                    // Redirigir al panel del cliente si el registro fue exitoso
-                    window.location.href = "/panel"
-                }
+                if (success) window.location.href = "/panel"
             }
         } catch (err) {
-            // Los errores son manejados por el contexto
             console.error('Error en autenticación:', err);
         }
     };
+
+    const generateMagicRecovery = ({ isCancel }: { isCancel?: boolean }) => {
+        if (isCancel && isCancel === true) {
+            setIsRecovery(false);
+        } else if (isCancel === false || !isCancel) {
+            setIsRecovery(true)
+        }
+    }
+
+    const handleRecoveryPassword = async (e: React.FormEvent<HTMLElement>): Promise<void> => {
+        e.preventDefault();
+
+        try {
+            const resMagicLink = await axios.post(
+                'api/auth/recovery-pass/magic',
+                { email, userType: 'client' }
+            )
+
+            if (resMagicLink.data.success == false) throw new Error(resMagicLink.data.error);
+
+            setIsActiveRecovery(true)
+        } catch (error) {
+            if (error instanceof Error) {
+                console.log(error.message);
+            }
+        }
+    }
 
     return {
         isLogin,
@@ -90,8 +109,12 @@ function useAuth() {
         handleCompanyChange,
         isLoading,
         error,
+        isRecovery,
+        isActiveRecovery,
         setIsLogin,
         handleSubmit,
+        generateMagicRecovery,
+        handleRecoveryPassword
     };
 }
 
