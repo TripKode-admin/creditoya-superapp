@@ -1,7 +1,7 @@
 "use client"
 
 import { useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -14,7 +14,8 @@ interface ResetPasswordResponse {
     message?: string;
 }
 
-function ResetPassMagic() {
+// Client component that uses useSearchParams
+function ResetPasswordForm() {
     const searchParams = useSearchParams();
     const router = useRouter();
 
@@ -66,7 +67,6 @@ function ResetPassMagic() {
 
         validateToken();
     }, [token, userType, router]);
-
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
@@ -174,4 +174,27 @@ function ResetPassMagic() {
     );
 }
 
-export default ResetPassMagic;
+// Loading fallback component
+function LoadingFallback() {
+    return (
+        <div className="flex flex-col items-center justify-center min-h-screen p-4">
+            <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
+                <h1 className="text-2xl font-bold text-center text-gray-800 mb-4">
+                    Cargando...
+                </h1>
+                <div className="flex justify-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// Main component that wraps the client component with Suspense
+export default function ResetPassMagic() {
+    return (
+        <Suspense fallback={<LoadingFallback />}>
+            <ResetPasswordForm />
+        </Suspense>
+    );
+}
