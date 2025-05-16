@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, ChangeEvent } from "react";
@@ -14,7 +13,7 @@ interface BoxUploadFilesProps {
 
 function BoxUploadFiles({
     title,
-    accept = ".pdf,.jpg,.jpeg,.png",
+    accept = "Solo archivos .pdf",
     maxSize = 5, // Default 5MB
     required = false,
     onChange
@@ -47,16 +46,10 @@ function BoxUploadFiles({
             return;
         }
 
-        // Check file type if accept is specified
+        // Check if file is PDF
         const fileType = selectedFile.type;
-        const acceptedTypes = accept.split(',').map(type => type.trim().replace('.', ''));
-
-        // Handle special case for images and PDFs
-        if (accept !== '*' && !acceptedTypes.some(type =>
-            fileType.includes(type) ||
-            (type === 'jpg' && fileType === 'image/jpeg')
-        )) {
-            setError(`Tipo de archivo no aceptado. Use: ${accept}`);
+        if (fileType !== 'application/pdf') {
+            setError('Solo se permiten archivos PDF');
             return;
         }
 
@@ -109,29 +102,11 @@ function BoxUploadFiles({
 
     // Get file icon based on file type
     const getFileIcon = () => {
-        if (!file) return null;
-
-        const fileType = file.type;
-
-        if (fileType.includes('pdf')) {
-            return (
-                <svg className="w-8 h-8 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
-                </svg>
-            );
-        } else if (fileType.includes('image')) {
-            return (
-                <svg className="w-8 h-8 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-                </svg>
-            );
-        } else {
-            return (
-                <svg className="w-8 h-8 text-blue-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
-                </svg>
-            );
-        }
+        return (
+            <svg className="w-8 h-8 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+            </svg>
+        );
     };
 
     return (
@@ -162,7 +137,7 @@ function BoxUploadFiles({
                     ref={fileInputRef}
                     type="file"
                     className="hidden"
-                    accept={accept}
+                    accept=".pdf,application/pdf"
                     onChange={handleFileChange}
                     required={required && !file}
                 />
@@ -207,7 +182,7 @@ function BoxUploadFiles({
                             <span className="font-semibold">Haga clic para cargar</span> o arrastre y suelte
                         </p>
                         <p className={`text-xs ${darkmode ? 'text-gray-400' : 'text-gray-500'}`}>
-                            {accept === "*" ? "Cualquier tipo de archivo" : accept.replaceAll(".", "")} (Máx. {maxSize}MB)
+                            Solo archivos PDF (Máx. {maxSize}MB)
                         </p>
                     </div>
                 )}
