@@ -1,29 +1,45 @@
+
 import { validateToken } from '@/lib/validate-token';
 import axios from 'axios';
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from "next/headers"
+import { cookies } from "next/headers";
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const userId = searchParams.get('user_id');
-
-  // Obtener el token de las cookies
-  const cookieStore = await cookies();
-  const token = cookieStore.get('creditoya_token')?.value;
-
-  // Validar el token
-  await validateToken(token);
-
-  // Configurar headers con el token
-  const config = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Cookie: `creditoya_token=${token}`
-    },
-    withCredentials: true
-  };
-
   try {
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('user_id');
+
+    // Obtener el token de las cookies
+    const cookieStore = await cookies();
+    const token = cookieStore.get('creditoya_token')?.value;
+
+    // Si no hay token, devolver respuesta adecuada sin error 500
+    if (!token) {
+      return NextResponse.json({
+        success: false,
+        error: 'No autenticado'
+      }, { status: 401 });
+    }
+
+    // Validar el token
+    try {
+      await validateToken(token);
+    } catch (tokenError) {
+      return NextResponse.json({
+        success: false,
+        error: 'Token inválido'
+      }, { status: 401 });
+    }
+
+    // Configurar headers con el token
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Cookie: `creditoya_token=${token}`
+      },
+      withCredentials: true
+    };
+
     let response;
     const baseURL = process.env.GATEWAY_API || '';
 
@@ -59,37 +75,57 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const userId = searchParams.get('user_id');
-
-  // Get update data from request
-  const { field, value } = await request.json();
-
-  if (!field || value === undefined) {
-    return NextResponse.json({  
-      success: false,
-      error: 'Field and value are required'
-    }, { status: 400 });
-  }
-
-  // Get token from cookies
-  const cookieStore = await cookies();
-  const token = cookieStore.get('creditoya_token')?.value;
-
-  // Validate token
-  await validateToken(token);
-
-  // Configure headers with token
-  const config = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Cookie: `creditoya_token=${token}`
-    },
-    withCredentials: true
-  };
-
   try {
-    if (!userId) throw new Error("user_id is required in query");
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('user_id');
+
+    // Get update data from request
+    const { field, value } = await request.json();
+
+    if (!field || value === undefined) {
+      return NextResponse.json({
+        success: false,
+        error: 'Field and value are required'
+      }, { status: 400 });
+    }
+
+    if (!userId) {
+      return NextResponse.json({
+        success: false,
+        error: "user_id is required in query"
+      }, { status: 400 });
+    }
+
+    // Get token from cookies
+    const cookieStore = await cookies();
+    const token = cookieStore.get('creditoya_token')?.value;
+
+    // Manejar el caso donde no hay token
+    if (!token) {
+      return NextResponse.json({
+        success: false,
+        error: 'No autenticado'
+      }, { status: 401 });
+    }
+
+    // Validate token
+    try {
+      await validateToken(token);
+    } catch (tokenError) {
+      return NextResponse.json({
+        success: false,
+        error: 'Token inválido'
+      }, { status: 401 });
+    }
+
+    // Configure headers with token
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Cookie: `creditoya_token=${token}`
+      },
+      withCredentials: true
+    };
 
     const baseURL = process.env.GATEWAY_API || '';
 

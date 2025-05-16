@@ -24,8 +24,12 @@ export const ClientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     useEffect(() => {
         const checkAuthStatus = async () => {
             try {
-                const res = await axios.get("/api/auth/me", { withCredentials: true });
-                if (!res) console.log("No se pudo obtener info de la session")
+                const res = await axios.get("/api/auth/me", {
+                    withCredentials: true,
+                    // Add timeout to prevent hanging requests
+                    timeout: 5000
+                });
+
                 if (res.data.success && res.data.data?.user) {
                     setAuthState({
                         isAuthenticated: true,
@@ -36,7 +40,10 @@ export const ClientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 } else {
                     setAuthState(prev => ({ ...prev, isLoading: false }));
                 }
-            } catch (error) {
+            } catch (error: any) {
+                // Don't show error toast for authentication checks - this is normal for non-authenticated users
+                console.log("Auth check: User not authenticated");
+
                 setAuthState(prev => ({
                     ...prev,
                     isLoading: false,
@@ -99,8 +106,6 @@ export const ClientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         try {
             const res = await axios.post("/api/auth/register", userData);
             const { user } = res.data.data;
-
-            // console.log("register: ", res)
 
             if (!user) {
                 throw new Error('Error en el registro');
