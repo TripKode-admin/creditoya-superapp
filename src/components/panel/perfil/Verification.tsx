@@ -35,6 +35,19 @@ function VerificationPerfil() {
         const file: File | null = e.target.files?.[0] || null;
         if (!file || !userComplete?.Document?.[0]?.id) return;
 
+        // Validación robusta de tipo de archivo PDF
+        const isPdf = file.type === 'application/pdf';
+        const fileExtension = file.name.split('.').pop()?.toLowerCase();
+        const hasValidExtension = fileExtension === 'pdf';
+
+        if (!isPdf || !hasValidExtension) {
+            console.error("Tipo de archivo no válido. Solo se permiten archivos PDF.");
+            setUploadStatus(prev => ({ ...prev, docs: 'error' }));
+            // // Opcional: Mostrar mensaje al usuario
+            // alert("Solo se permiten archivos PDF. Por favor, seleccione un archivo válido.");
+            return;
+        }
+
         try {
             setIsUploading(prev => ({ ...prev, docs: true }));
 
@@ -56,7 +69,6 @@ function VerificationPerfil() {
 
             // Aquí podrías actualizar el estado de userComplete si es necesario
             refreshUserData();
-
         } catch (error) {
             console.error("Error al subir el documento:", error);
             setUploadStatus(prev => ({ ...prev, docs: 'error' }));
@@ -68,6 +80,22 @@ function VerificationPerfil() {
     const handleSelfieUpload = async (e: FileChangeEvent): Promise<void> => {
         const file: File | null = e.target.files?.[0] || null;
         if (!file || !userComplete?.Document?.[0]?.id) return;
+
+        // Validación robusta de tipo de archivo de imagen
+        const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/heic', 'image/heif'];
+        const isValidImageType = validImageTypes.includes(file.type);
+
+        const fileExtension = file.name.split('.').pop()?.toLowerCase();
+        const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'heic', 'heif'];
+        const hasValidExtension = validExtensions.includes(fileExtension || '');
+
+        if (!isValidImageType || !hasValidExtension) {
+            console.error("Tipo de archivo no válido. Solo se permiten imágenes.");
+            setUploadStatus(prev => ({ ...prev, selfie: 'error' }));
+            // Opcional: Mostrar mensaje al usuario
+            alert("Solo se permiten archivos de imagen (JPG, PNG, etc.). Por favor, seleccione un archivo válido.");
+            return;
+        }
 
         try {
             setIsUploading(prev => ({ ...prev, selfie: true }));
@@ -88,14 +116,13 @@ function VerificationPerfil() {
 
             // Aquí podrías actualizar el estado de userComplete si es necesario
             refreshUserData()
-
         } catch (error) {
             console.error("Error al subir la selfie:", error);
             setUploadStatus(prev => ({ ...prev, selfie: 'error' }));
         } finally {
             setIsUploading(prev => ({ ...prev, selfie: false }));
         }
-    };
+    }
 
     // Si no hay datos de usuario, no renderizamos nada
     if (!userComplete) return null;
