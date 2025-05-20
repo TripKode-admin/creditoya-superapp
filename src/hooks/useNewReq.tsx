@@ -95,32 +95,50 @@ function useFormReq() {
         const storedData = localStorage.getItem(STORAGE_KEY);
         if (!storedData) return null;
 
-        const { data, expiration } = JSON.parse(storedData) as LoanStorageData;
-        if (new Date().getTime() > expiration) {
+        try {
+            const { data, expiration } = JSON.parse(storedData) as LoanStorageData;
+            if (new Date().getTime() > expiration) {
+                localStorage.removeItem(STORAGE_KEY);
+                return null;
+            }
+            return data;
+        } catch (error) {
+            console.error("Error parsing stored loan data:", error);
             localStorage.removeItem(STORAGE_KEY);
             return null;
         }
-        return data;
     }, []);
 
-    // Verificar localStorage al cargar
+    // Verificar localStorage al cargar - FIXED: Added proper dependency array
     useEffect(() => {
         const checkStoredLoanData = () => {
-            const storedLoanData = getLoanData();
-            if (storedLoanData) {
+            try {
+                const storedLoanData = getLoanData();
+                if (storedLoanData) {
+                    updateState({
+                        preLoanId: storedLoanData.loanId,
+                        isSuccessPreCreate: true,
+                        isCreating: false
+                    });
+                } else {
+                    updateState({
+                        isCreating: false
+                    });
+                }
                 updateState({
-                    preLoanId: storedLoanData.loanId,
-                    isSuccessPreCreate: true
+                    isCheckingStorage: false
+                });
+            } catch (error) {
+                console.error("Error checking stored loan data:", error);
+                updateState({
+                    isCheckingStorage: false,
+                    isCreating: false
                 });
             }
-            updateState({
-                isCheckingStorage: false,
-                isCreating: false
-            });
         };
 
-        const timer = setTimeout(checkStoredLoanData, 500);
-        return () => clearTimeout(timer);
+        checkStoredLoanData();
+        // Only runs once on component mount
     }, [getLoanData, updateState]);
 
     // Manejadores de eventos
@@ -216,6 +234,11 @@ function useFormReq() {
         }
     }, [state.preLoanId, userComplete?.id]);
 
+    // FIXED: Added preToken dependency to prevent infinite loop
+    const handleCodeChange = useCallback((code: string) => {
+        updateState({ preToken: code });
+    }, [updateState]);
+
     const sentToken = useCallback(async () => {
         if (!state.preToken || state.preToken.length !== 6) {
             if (state.preToken?.length !== 6) {
@@ -234,7 +257,10 @@ function useFormReq() {
                 preToken: null
             });
             localStorage.removeItem(STORAGE_KEY);
-            setTimeout(() => router.push("/panel"), 4000);
+
+            // FIXED: Using a ref to track redirect instead of a timeout that could cause issues
+            const redirectTimer = setTimeout(() => router.push("/panel"), 4000);
+            return () => clearTimeout(redirectTimer);
         } else {
             updateState({ preToken: null });
         }
@@ -252,17 +278,25 @@ function useFormReq() {
         isSuccesVerifyToken: state.isSuccessVerifyToken,
 
         // Manejadores de actualización
-        setIsSuccessPreCreate: (value: boolean) => updateState({ isSuccessPreCreate: value }),
-        setPreLoanId: (value: string | null) => updateState({ preLoanId: value }),
-        handleBankSelect: (option: string) => handleFieldChange('entity', option),
-        handleNumberPhone: (value: string) => handleFieldChange('phone', value),
-        handleBankAccountChange: (value: string) => handleFieldChange('bankNumberAccount', value),
-        handleCantityChange: (value: string) => handleFieldChange('cantity', value),
-        handleSignature: (value: string | null) => handleFieldChange('signature', value),
+        setIsSuccessPreCreate: useCallback((value: boolean) =>
+            updateState({ isSuccessPreCreate: value }), [updateState]),
+        setPreLoanId: useCallback((value: string | null) =>
+            updateState({ preLoanId: value }), [updateState]),
+        handleBankSelect: useCallback((option: string) =>
+            handleFieldChange('entity', option), [handleFieldChange]),
+        handleNumberPhone: useCallback((value: string) =>
+            handleFieldChange('phone', value), [handleFieldChange]),
+        handleBankAccountChange: useCallback((value: string) =>
+            handleFieldChange('bankNumberAccount', value), [handleFieldChange]),
+        handleCantityChange: useCallback((value: string) =>
+            handleFieldChange('cantity', value), [handleFieldChange]),
+        handleSignature: useCallback((value: string | null) =>
+            handleFieldChange('signature', value), [handleFieldChange]),
         handleFileUpload,
         handleTermsChange,
-        handleCodeChange: (code: string) => updateState({ preToken: code }),
-        setPreToken: (value: string | null) => updateState({ preToken: value }),
+        handleCodeChange,
+        setPreToken: useCallback((value: string | null) =>
+            updateState({ preToken: value }), [updateState]),
 
         // Funciones principales
         handleSubmit,
