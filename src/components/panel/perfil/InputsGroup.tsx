@@ -79,7 +79,7 @@ function FormDatesPerfil() {
                     initialValue={formatFieldValue('number', userComplete.Document[0].number)}
                     required={true}
                     onUpdate={handleUpdate}
-                    fieldName="Document[0].number" // ✅ CAMBIAR ESTO
+                    fieldName="Document[0].number"
                     isValid={isFieldValid('number', userComplete.Document[0].number)}
                 />
 
