@@ -2,7 +2,6 @@
 
 import usePanelApi from "@/hooks/usePanelApi";
 import FormInput from "../PerfilFormInput";
-import SelectInput from "@/components/panel/SelectInput";
 import SelectEmpresa from "../selectCompani";
 
 function FormDatesPerfil() {

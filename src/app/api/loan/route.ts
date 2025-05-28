@@ -3,6 +3,20 @@ import axios from "axios";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
+// Configuración específica para esta ruta
+export const config = {
+    api: {
+        bodyParser: {
+            sizeLimit: '50mb',
+        },
+        responseLimit: '50mb',
+    },
+};
+
+// Configuración del runtime
+export const runtime = 'nodejs';
+export const maxDuration = 60; // 60 segundos para subidas grandes
+
 export async function POST(request: NextRequest) {
     const cookieStore = await cookies();
     const token = cookieStore.get('creditoya_token')?.value;
@@ -10,6 +24,8 @@ export async function POST(request: NextRequest) {
     await validateToken(token);
 
     try {
+        console.log('[UPLOAD] Iniciando procesamiento de archivos...');
+
         // Since we're using FormData, we need to parse it correctly
         const formData = await request.formData();
 
@@ -28,6 +44,20 @@ export async function POST(request: NextRequest) {
         const fisrt_flyer = formData.get('fisrt_flyer') as File | null;
         const second_flyer = formData.get('second_flyer') as File | null;
         const third_flyer = formData.get('third_flyer') as File | null;
+
+        // Log file sizes for debugging
+        const files = { labor_card, fisrt_flyer, second_flyer, third_flyer };
+        let totalSize = 0;
+
+        Object.entries(files).forEach(([key, file]) => {
+            if (file) {
+                const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+                console.log(`[UPLOAD] ${key}: ${sizeMB}MB, tipo: ${file.type}`);
+                totalSize += file.size;
+            }
+        });
+
+        console.log(`[UPLOAD] Tamaño total: ${(totalSize / 1024 / 1024).toFixed(2)}MB`);
 
         // Validate required fields
         if (!signature) {
@@ -55,10 +85,40 @@ export async function POST(request: NextRequest) {
             }, { status: 400 });
         }
 
+        // Validate file types and sizes
+        const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+        const maxFileSize = 10 * 1024 * 1024; // 10MB por archivo
+        const maxTotalSize = 40 * 1024 * 1024; // 40MB total
+
+        for (const [key, file] of Object.entries(files)) {
+            if (file) {
+                if (!allowedTypes.includes(file.type)) {
+                    return NextResponse.json({
+                        success: false,
+                        error: `Tipo de archivo no permitido para ${key}. Solo PDF, JPG, PNG`
+                    }, { status: 400 });
+                }
+
+                if (file.size > maxFileSize) {
+                    return NextResponse.json({
+                        success: false,
+                        error: `Archivo ${key} muy grande (máximo 10MB)`
+                    }, { status: 400 });
+                }
+            }
+        }
+
+        if (totalSize > maxTotalSize) {
+            return NextResponse.json({
+                success: false,
+                error: `Tamaño total de archivos excede 40MB (actual: ${(totalSize / 1024 / 1024).toFixed(2)}MB)`
+            }, { status: 400 });
+        }
+
         // Create a new FormData for the API request
         const apiFormData = new FormData();
 
-        // Add body fields to the API request - these will go in the request body
+        // Add body fields to the API request
         apiFormData.append('phone', phone);
         apiFormData.append('signature', signature);
         apiFormData.append('entity', entity);
@@ -66,7 +126,7 @@ export async function POST(request: NextRequest) {
         apiFormData.append('cantity', cantity);
         apiFormData.append('terms_and_conditions', terms_and_conditions.toString());
 
-        // Only add isValorAgregado if it's true (matches the optional parameter in the controller)
+        // Only add isValorAgregado if it's true
         if (isValorAgregado) {
             apiFormData.append('isValorAgregado', isValorAgregado.toString());
         }
@@ -77,26 +137,30 @@ export async function POST(request: NextRequest) {
         if (second_flyer) apiFormData.append('second_flyer', second_flyer);
         if (third_flyer) apiFormData.append('third_flyer', third_flyer);
 
-        // Configure the request headers
+        // Configure the request headers with increased limits
         const config = {
             headers: {
                 Authorization: `Bearer ${token}`,
                 'Content-Type': 'multipart/form-data'
-            }
+            },
+            timeout: 120000, // 2 minutos
+            maxContentLength: 50 * 1024 * 1024, // 50MB
+            maxBodyLength: 50 * 1024 * 1024, // 50MB
         };
 
         try {
             const baseURL = process.env.GATEWAY_API || '';
 
-            // Make the request to the backend API - note userId is now in the URL path
+            console.log('[UPLOAD] Enviando al backend...');
+
+            // Make the request to the backend API
             const loanResponse = await axios.post(
                 `${baseURL}/loans/${userId}`,
                 apiFormData,
                 config
             );
 
-            console.log('[UPLOAD] API response:', loanResponse.status, loanResponse.statusText);
-            console.log('[UPLOAD] API response data:', loanResponse.data);
+            console.log('[UPLOAD] Backend response:', loanResponse.status, loanResponse.statusText);
 
             return NextResponse.json({
                 success: true,
@@ -104,20 +168,43 @@ export async function POST(request: NextRequest) {
                 loanDetails: loanResponse.data
             });
         } catch (apiError: any) {
-            console.error('[UPLOAD] API request error details:', {
+            console.error('[UPLOAD] Backend error:', {
                 status: apiError.response?.status,
                 statusText: apiError.response?.statusText,
                 data: apiError.response?.data,
                 message: apiError.message
             });
 
+            // Handle specific error cases
+            if (apiError.code === 'ECONNABORTED') {
+                return NextResponse.json({
+                    success: false,
+                    error: 'Timeout: La subida de archivos tardó demasiado'
+                }, { status: 408 });
+            }
+
+            if (apiError.response?.status === 413) {
+                return NextResponse.json({
+                    success: false,
+                    error: 'Archivos muy grandes para el servidor backend'
+                }, { status: 413 });
+            }
+
             return NextResponse.json({
                 success: false,
-                error: apiError.response?.data?.message || 'Error al procesar la solicitud'
+                error: apiError.response?.data?.message || 'Error al procesar la solicitud en el backend'
             }, { status: apiError.response?.status || 500 });
         }
     } catch (error: any) {
         console.error('[UPLOAD] Server error:', error);
+
+        if (error.name === 'PayloadTooLargeError') {
+            return NextResponse.json({
+                success: false,
+                error: 'Los archivos son muy grandes para procesar'
+            }, { status: 413 });
+        }
+
         return NextResponse.json({
             success: false,
             error: 'Error interno del servidor'
