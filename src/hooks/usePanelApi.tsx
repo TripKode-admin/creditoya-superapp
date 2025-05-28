@@ -70,32 +70,39 @@ function usePanelApi() {
         setIsUpdating(prev => ({ ...prev, [fieldName]: true }));
 
         try {
-            // Handle nested fields (Document[0].number)
             let payload: any;
-            if (fieldName.includes('[')) {
-                // Special case for document number
-                if (fieldName.includes('Document[0].number')) {
-                    // Use the proper Prisma nested update syntax
-                    payload = {
-                        field: 'Document',
-                        value: {
-                            update: {
-                                where: { id: userComplete.Document[0].id },
-                                data: { number: value }
-                            }
-                        }
-                    };
-                } else {
-                    // Extract the correct field name for the API
-                    const mainField = fieldName.split('[')[0];
-                    payload = { field: mainField, value };
+
+            // CORREGIR: Manejar específicamente Document[0].number
+            if (fieldName === 'Document[0].number') {
+                if (!userComplete.Document || !userComplete.Document[0] || !userComplete.Document[0].id) {
+                    console.error("No se encontró el documento a actualizar");
+                    return false;
                 }
-            } else {
+
+                payload = {
+                    field: 'Document',
+                    value: {
+                        update: {
+                            where: { id: userComplete.Document[0].id },
+                            data: { number: value }
+                        }
+                    }
+                };
+
+                console.log("HOOK - Payload para Document[0].number:", JSON.stringify(payload, null, 2));
+            }
+            // Para otros campos anidados futuros
+            else if (fieldName.includes('[') && fieldName.includes('Document')) {
+                // Aquí puedes manejar otros campos de Document si los necesitas
+                const mainField = fieldName.split('[')[0];
+                payload = { field: mainField, value };
+            }
+            // Para campos normales
+            else {
                 payload = { field: fieldName, value };
             }
 
-            // // Log del payload para depuración
-            // console.log(`Enviando payload para ${fieldName}:`, payload);
+            console.log(`HOOK - Enviando al API Route:`, JSON.stringify(payload, null, 2));
 
             // Make the API request
             const response = await axios.put(
@@ -108,7 +115,7 @@ function usePanelApi() {
             const isSuccess = response.data?.success === true;
 
             if (isSuccess) {
-                // console.log(`Field ${fieldName} updated successfully to:`, value);
+                console.log(`Field ${fieldName} updated successfully to:`, value);
                 lastUpdatedValues.current[fieldName] = value;
 
                 // Solo refrescar los datos si no hay un refresh en progreso

@@ -83,8 +83,8 @@ function FormDatesPerfil() {
                     label="Numero de documento"
                     initialValue={formatFieldValue('number', userComplete.Document[0].number)}
                     required={true}
-                    onUpdate={(field, value) => handleUpdate("Document[0].number", value)}
-                    fieldName="number"
+                    onUpdate={handleUpdate}
+                    fieldName="Document[0].number" // ✅ CAMBIAR ESTO
                     isValid={isFieldValid('number', userComplete.Document[0].number)}
                 />
 

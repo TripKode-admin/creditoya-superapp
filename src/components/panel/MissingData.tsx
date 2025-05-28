@@ -22,12 +22,12 @@ function MissingData() {
                 </div>
                 <div>
                     <div className="mt-4">
-                        <h3 className="dark:text-gray-50 text-lg font-medium">Datos personales y documentos necesarios</h3>
-                        <p className="text-xs mb-6 dark:text-gray-300">Completalos para comenzar a solicitar prestamos</p>
+                        <h3 className="dark:text-gray-50 text-lg font-medium">Tu información y papeles necesarios</h3>
+                        <p className="text-xs mb-6 dark:text-gray-300">Llena estos datos para poder pedir un préstamo</p>
 
                         <div className="mt-2 dark:text-gray-200 flex flex-col gap-3">
                             {fieldStatuses.map((field, index) => (
-                                <div key={index} className="flex flex-row gap-10 justify-between items-center p-2 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 dark:hover:border-gray-600 hover:border-gray-200 rounded-md">
+                                <div key={index} className="flex flex-row gap-10 justify-between items-center p-2 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 dark:hover:border-gray-600 hover:border-gray-200 rounded-md">
                                     <p className="font-thin grid place-content-center">{field.name}</p>
                                     <div>
                                         {field.completed ? (
@@ -41,12 +41,10 @@ function MissingData() {
                         </div>
 
                         <div className="mt-6 flex justify-start">
-                            <button className="text-sm font-thin" onClick={() => router.push("/panel/perfil")}>
-                                <div className="flex flex-row cursor-pointer gap-2 dark:text-gray-300 text-gray-600 hover:text-gray-800 dark:hover:text-gray-50">
-                                    <p className="pb-0.5 ">Completa tus datos ahora</p>
-                                    <div className="grid place-content-center">
-                                        <ArrowUpRight size={20} className="text-gray-500" />
-                                    </div>
+                            <button className="cursor-pointer grow text-sm font-thin flex flex-row justify-between bg-green-100 dark:bg-green-900 dark:hover:bg-green-800 hover:bg-green-200 p-3 rounded-md" onClick={() => router.push("/panel/perfil")}>
+                                <p className="pb-0.5 text-green-600 dark:text-green-300 font-semibold">Completa tus datos ahora</p>
+                                <div className="grid place-content-center">
+                                    <ArrowUpRight size={20} className="text-green-600" />
                                 </div>
                             </button>
                         </div>

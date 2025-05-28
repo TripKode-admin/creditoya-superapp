@@ -88,8 +88,8 @@ export const ClientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 isAuthenticated: false,
                 error: errorMessage
             }));
-
-            toast.error(errorMessage);
+            // console.error("Login error:", errorMessage);
+            // toast.error("Credenciales inválidas");
             return false;
         }
     };
@@ -126,7 +126,7 @@ export const ClientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 ...prev,
                 isLoading: false,
                 isAuthenticated: false,
-                error: errorMessage
+                error: "Credenciales inválidas"
             }));
 
             toast.error(errorMessage);

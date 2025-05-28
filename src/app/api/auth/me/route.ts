@@ -82,6 +82,8 @@ export async function PUT(request: NextRequest) {
     // Get update data from request
     const { field, value } = await request.json();
 
+    console.log("API Route - Datos recibidos:", { field, value });
+
     if (!field || value === undefined) {
       return NextResponse.json({
         success: false,
@@ -100,7 +102,6 @@ export async function PUT(request: NextRequest) {
     const cookieStore = await cookies();
     const token = cookieStore.get('creditoya_token')?.value;
 
-    // Manejar el caso donde no hay token
     if (!token) {
       return NextResponse.json({
         success: false,
@@ -129,10 +130,19 @@ export async function PUT(request: NextRequest) {
 
     const baseURL = process.env.GATEWAY_API || '';
 
-    // Send properly formatted data: data with the field and value directly
+    let payload: any;
+
+    if (field === 'Document' && value && typeof value === 'object' && value.update) {
+      payload = { [field]: value };
+      console.log("API Route - Payload para Document:", JSON.stringify(payload, null, 2));
+    } else {
+      payload = { [field]: value };
+      console.log("API Route - Payload normal:", JSON.stringify(payload, null, 2));
+    }
+
     const response = await axios.put(
       `${baseURL}/clients/${userId}`,
-      { [field]: value }, // This formats it correctly for Prisma
+      payload,
       config
     );
 

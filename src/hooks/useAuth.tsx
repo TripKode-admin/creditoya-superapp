@@ -7,7 +7,6 @@ import { UserCompany } from "@/types/full";
 import axios from "axios";
 
 function useAuth() {
-    const router = useRouter();
     const authContext = useClientAuth();
 
     const [isLogin, setIsLogin] = useState(true);
@@ -21,15 +20,6 @@ function useAuth() {
 
     const [isRecovery, setIsRecovery] = useState(false);
     const [isActiveRecovery, setIsActiveRecovery] = useState(false);
-
-    // console.log(
-    //     [ email],
-    //     [ password],
-    //     [ names ],
-    //     [ firstLastName ],
-    //     [ secondLastName ],
-    //     [ currentCompanie ]
-    // )
 
     // Usamos el estado de carga del contexto de autenticación
     const isLoading = authContext.isLoading;

@@ -126,6 +126,7 @@ const FormInput: React.FC<FormInputProps> = ({
     try {
       // ¡Importante! Indicar que queremos ignorar la próxima actualización de initialValue
       ignoreNextInitialValueUpdate.current = true;
+      console.log(`Guardando ${fieldName}:`, valueToSave);
 
       const success = await onUpdate(fieldName, valueToSave);
 

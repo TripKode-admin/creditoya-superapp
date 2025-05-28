@@ -3,9 +3,9 @@ export enum UserCompany {
     INCAUCA_COSECHA = "incauca_cosecha",
     PROVIDENCIA_SAS = "providencia_sas",
     PROVIDENCIA_COSECHA = "providencia_cosecha",
-    CON_ALTA = "con_alta",
+    CONALTA = "conalta",
     PICHICHI_SAS = "pichichi_sas",
-    PICHICHI_COORTE = "pichichi_coorte",
+    PICHICHI_COORTE = "pichichi_corte",
     VALOR_AGREGADO = "valor_agregado",
     NO = 'no',
 }

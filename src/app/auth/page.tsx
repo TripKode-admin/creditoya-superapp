@@ -86,7 +86,7 @@ function AuthPage() {
 
                     {error && (
                         <div className="p-2 text-sm bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md mb-4">
-                            {error}
+                            {"Credenciales inválidas, verifica tus datos e intenta nuevamente."}
                         </div>
                     )}
 

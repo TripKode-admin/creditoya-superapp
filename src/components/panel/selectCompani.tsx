@@ -27,6 +27,11 @@ const SelectEmpresa = ({ isRegister, onChange, defaultValue }: SelectEmpresaProp
     // Estado para controlar si está ocurriendo una actualización manual
     const [manuallyUpdating, setManuallyUpdating] = useState(false);
 
+    // Filtrar las empresas excluyendo "NO"
+    const getFilteredCompanies = () => {
+        return Object.values(UserCompany).filter(company => company !== UserCompany.NO);
+    };
+
     // Efecto para inicializar el componente cuando los datos del usuario están disponibles
     useEffect(() => {
         if (!isRegister && userComplete?.currentCompanie && !isInitialized) {
@@ -93,7 +98,7 @@ const SelectEmpresa = ({ isRegister, onChange, defaultValue }: SelectEmpresaProp
                         className="w-full px-3 py-2 border rounded-md bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-1 focus:ring-green-400 focus:border-green-400 text-base"
                     >
                         <option value="" disabled>Selecciona una empresa</option>
-                        {Object.values(UserCompany).map((company) => (
+                        {getFilteredCompanies().map((company) => (
                             <option key={company} value={company}>
                                 {formatCompanyName(company)}
                             </option>
@@ -119,7 +124,7 @@ const SelectEmpresa = ({ isRegister, onChange, defaultValue }: SelectEmpresaProp
                         className="w-full px-3 py-2 border rounded-lg bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-thin"
                         disabled={manuallyUpdating}
                     >
-                        {Object.values(UserCompany).map((company) => (
+                        {getFilteredCompanies().map((company) => (
                             <option key={company} value={company}>
                                 {formatCompanyName(company)}
                             </option>
