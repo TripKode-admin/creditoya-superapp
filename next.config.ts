@@ -1,11 +1,20 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: 'standalone',
   experimental: {
     serverActions: {
       bodySizeLimit: '50mb' // Aumentado para PDFs grandes
-    }
+    },
+    // Turbopack está habilitado por defecto en Next.js 15
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
+      },
+    },
   },
 
   images: {
@@ -14,21 +23,42 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
       }
-    ]
+    ],
+    // Permitir SVGs si los usas con next/image
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
-  // Configuración para Turbopack (reemplaza la configuración de webpack)
-  turbopack: {
-    rules: {
-      '*.svg': {
-        loaders: ['@svgr/webpack'],
-        as: '*.js',
-      },
-    },
-    resolveAlias: {
-      // Puedes agregar alias si los necesitas
-    },
-    resolveExtensions: ['.tsx', '.ts', '.jsx', '.js', '.mjs', '.json'],
+  // Configuración de webpack como fallback para cuando no uses Turbopack
+  webpack(config, { dev, isServer }) {
+    // Solo aplicar en desarrollo o cuando Turbopack no esté disponible
+    if (dev || !process.env.TURBOPACK) {
+      config.module.rules.push({
+        test: /\.svg$/i,
+        issuer: /\.[jt]sx?$/,
+        use: [
+          {
+            loader: '@svgr/webpack',
+            options: {
+              svgoConfig: {
+                plugins: [
+                  {
+                    name: 'preset-default',
+                    params: {
+                      overrides: {
+                        removeViewBox: false,
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      });
+    }
+
+    return config;
   },
 
   // Configuración de headers para archivos grandes

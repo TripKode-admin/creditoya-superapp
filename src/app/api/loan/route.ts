@@ -3,31 +3,50 @@ import axios from "axios";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-// Configuración específica para esta ruta
-export const config = {
-    api: {
-        bodyParser: {
-            sizeLimit: '50mb',
-        },
-        responseLimit: '50mb',
-    },
-};
-
-// Configuración del runtime
+// Configuración del runtime para App Router
 export const runtime = 'nodejs';
 export const maxDuration = 60; // 60 segundos para subidas grandes
+export const dynamic = 'force-dynamic'; // Forzar que esta ruta sea dinámica
 
 export async function POST(request: NextRequest) {
     const cookieStore = await cookies();
     const token = cookieStore.get('creditoya_token')?.value;
 
-    await validateToken(token);
+    try {
+        await validateToken(token);
+    } catch (error) {
+        return NextResponse.json({
+            success: false,
+            error: 'Token inválido o expirado'
+        }, { status: 401 });
+    }
 
     try {
         console.log('[UPLOAD] Iniciando procesamiento de archivos...');
 
-        // Since we're using FormData, we need to parse it correctly
-        const formData = await request.formData();
+        // Verificar el tamaño del contenido antes de procesarlo
+        const contentLength = request.headers.get('content-length');
+        const maxRequestSize = 50 * 1024 * 1024; // 50MB para la request completa
+
+        if (contentLength && parseInt(contentLength) > maxRequestSize) {
+            console.log(`[UPLOAD] Request demasiado grande: ${contentLength} bytes`);
+            return NextResponse.json({
+                success: false,
+                error: 'La solicitud es demasiado grande. Máximo 50MB total.'
+            }, { status: 413 });
+        }
+
+        // Parse FormData con timeout
+        let formData: FormData;
+        try {
+            formData = await request.formData();
+        } catch (error) {
+            console.error('[UPLOAD] Error parsing FormData:', error);
+            return NextResponse.json({
+                success: false,
+                error: 'Error al procesar los archivos. Posible tamaño excesivo.'
+            }, { status: 400 });
+        }
 
         // Extract the form fields from formData
         const phone = formData.get('phone') as string;
@@ -65,12 +84,16 @@ export async function POST(request: NextRequest) {
                 success: false,
                 error: 'No se proporcionó la firma del préstamo'
             }, { status: 400 });
-        } else if (!userId) {
+        }
+        
+        if (!userId) {
             return NextResponse.json({
                 success: false,
                 error: 'No se proporcionó el ID del usuario'
             }, { status: 400 });
-        } else if (!entity || !bankNumberAccount || !cantity || !terms_and_conditions) {
+        }
+        
+        if (!entity || !bankNumberAccount || !cantity || !terms_and_conditions) {
             return NextResponse.json({
                 success: false,
                 error: 'Faltan campos obligatorios'
@@ -85,10 +108,10 @@ export async function POST(request: NextRequest) {
             }, { status: 400 });
         }
 
-        // Validate file types and sizes
+        // Validate file types and sizes - Límites consistentes
         const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
-        const maxFileSize = 10 * 1024 * 1024; // 10MB por archivo
-        const maxTotalSize = 40 * 1024 * 1024; // 40MB total
+        const maxFileSize = 12 * 1024 * 1024; // 12MB por archivo (más conservador)
+        const maxTotalSize = 45 * 1024 * 1024; // 45MB total (dejar margen para metadata)
 
         for (const [key, file] of Object.entries(files)) {
             if (file) {
@@ -102,7 +125,7 @@ export async function POST(request: NextRequest) {
                 if (file.size > maxFileSize) {
                     return NextResponse.json({
                         success: false,
-                        error: `Archivo ${key} muy grande (máximo 10MB)`
+                        error: `Archivo ${key} muy grande (máximo 12MB). Actual: ${(file.size / 1024 / 1024).toFixed(2)}MB`
                     }, { status: 400 });
                 }
             }
@@ -111,7 +134,7 @@ export async function POST(request: NextRequest) {
         if (totalSize > maxTotalSize) {
             return NextResponse.json({
                 success: false,
-                error: `Tamaño total de archivos excede 40MB (actual: ${(totalSize / 1024 / 1024).toFixed(2)}MB)`
+                error: `Tamaño total de archivos excede 45MB (actual: ${(totalSize / 1024 / 1024).toFixed(2)}MB)`
             }, { status: 400 });
         }
 
@@ -151,6 +174,14 @@ export async function POST(request: NextRequest) {
         try {
             const baseURL = process.env.GATEWAY_API || '';
 
+            if (!baseURL) {
+                console.error('[UPLOAD] GATEWAY_API no configurado');
+                return NextResponse.json({
+                    success: false,
+                    error: 'Configuración del servidor incompleta'
+                }, { status: 500 });
+            }
+
             console.log('[UPLOAD] Enviando al backend...');
 
             // Make the request to the backend API
@@ -167,42 +198,66 @@ export async function POST(request: NextRequest) {
                 data: "Creación de préstamo exitoso",
                 loanDetails: loanResponse.data
             });
+
         } catch (apiError: any) {
             console.error('[UPLOAD] Backend error:', {
                 status: apiError.response?.status,
                 statusText: apiError.response?.statusText,
                 data: apiError.response?.data,
-                message: apiError.message
+                message: apiError.message,
+                code: apiError.code
             });
 
             // Handle specific error cases
             if (apiError.code === 'ECONNABORTED') {
                 return NextResponse.json({
                     success: false,
-                    error: 'Timeout: La subida de archivos tardó demasiado'
+                    error: 'Timeout: La subida de archivos tardó demasiado tiempo'
                 }, { status: 408 });
             }
 
             if (apiError.response?.status === 413) {
                 return NextResponse.json({
                     success: false,
-                    error: 'Archivos muy grandes para el servidor backend'
+                    error: 'Los archivos son demasiado grandes para el servidor backend'
                 }, { status: 413 });
+            }
+
+            if (apiError.response?.status === 400) {
+                return NextResponse.json({
+                    success: false,
+                    error: apiError.response?.data?.message || 'Datos inválidos enviados al backend'
+                }, { status: 400 });
+            }
+
+            if (apiError.response?.status >= 500) {
+                return NextResponse.json({
+                    success: false,
+                    error: 'Error interno del servidor backend'
+                }, { status: 502 });
             }
 
             return NextResponse.json({
                 success: false,
-                error: apiError.response?.data?.message || 'Error al procesar la solicitud en el backend'
+                error: apiError.response?.data?.message || 'Error al comunicarse con el backend'
             }, { status: apiError.response?.status || 500 });
         }
+
     } catch (error: any) {
         console.error('[UPLOAD] Server error:', error);
 
-        if (error.name === 'PayloadTooLargeError') {
+        if (error.name === 'PayloadTooLargeError' || error.message?.includes('too large')) {
             return NextResponse.json({
                 success: false,
-                error: 'Los archivos son muy grandes para procesar'
+                error: 'Los archivos son muy grandes para procesar (límite del servidor)'
             }, { status: 413 });
+        }
+
+        if (error.name === 'SyntaxError' && error.message?.includes('JSON')) {
+            return NextResponse.json({
+                success: false,
+                error: 'Error al procesar los datos del formulario'
+            }, { status: 400 });
         }
 
         return NextResponse.json({
