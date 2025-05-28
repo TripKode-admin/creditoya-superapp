@@ -3,6 +3,7 @@
 import usePanelApi from "@/hooks/usePanelApi";
 import FormInput from "../PerfilFormInput";
 import SelectInput from "@/components/panel/SelectInput";
+import SelectEmpresa from "../selectCompani";
 
 function FormDatesPerfil() {
     const {
@@ -17,11 +18,6 @@ function FormDatesPerfil() {
         const result = await updateUserField(fieldName, value);
         return result;
     }
-
-    const genreOptions = [
-        { value: "Masculino", label: "Masculino" },
-        { value: "Femenino", label: "Femenino" }
-    ];
 
     if (userComplete == null) return null;
 
@@ -60,6 +56,15 @@ function FormDatesPerfil() {
                 />
 
                 <FormInput
+                    label="Correo Electronico"
+                    initialValue={formatFieldValue('email', userComplete.email)}
+                    required={true}
+                    onUpdate={handleUpdate}
+                    fieldName="email"
+                    isValid={isFieldValid('email', userComplete.email)}
+                />
+
+                <FormInput
                     label="Fecha de nacimiento"
                     initialValue={formatFieldValue('birth_day', userComplete.birth_day)}
                     required={true}
@@ -67,16 +72,6 @@ function FormDatesPerfil() {
                     onUpdate={handleUpdate}
                     fieldName="birth_day"
                     isValid={isFieldValid('birth_day', userComplete.birth_day)}
-                />
-
-                <SelectInput
-                    label="Género"
-                    initialValue={formatFieldValue('genre', userComplete.genre || '')}
-                    options={genreOptions}
-                    required={true}
-                    onUpdate={handleUpdate}
-                    fieldName="genre"
-                    isValid={isFieldValid('genre', userComplete.genre)}
                 />
 
                 <FormInput
@@ -88,55 +83,7 @@ function FormDatesPerfil() {
                     isValid={isFieldValid('number', userComplete.Document[0].number)}
                 />
 
-                <div className="mb-5">
-                    <h3 className="font-semibold text-lg text-gray-600 dark:text-gray-50 mt-5">Datos de Contacto</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 font-light">Información para cualquier comunicación relacionada con tu solicitud.</p>
-                </div>
-
-                <FormInput
-                    label="Correo Electronico"
-                    initialValue={formatFieldValue('email', userComplete.email)}
-                    required={true}
-                    onUpdate={handleUpdate}
-                    fieldName="email"
-                    isValid={isFieldValid('email', userComplete.email)}
-                />
-
-                <FormInput
-                    label="Numero de Whatsapp"
-                    initialValue={formatFieldValue('phone_whatsapp', userComplete.phone_whatsapp)}
-                    required={true}
-                    onUpdate={handleUpdate}
-                    fieldName="phone_whatsapp"
-                    isValid={isFieldValid('phone_whatsapp', userComplete.phone_whatsapp)}
-                />
-
-                <FormInput
-                    label="Ciudad"
-                    initialValue={formatFieldValue('city', userComplete.city)}
-                    required={true}
-                    onUpdate={handleUpdate}
-                    fieldName="city"
-                    isValid={isFieldValid('city', userComplete.city)}
-                />
-
-                <FormInput
-                    label="Direccion de residencia"
-                    initialValue={formatFieldValue('residence_address', userComplete.residence_address)}
-                    required={true}
-                    onUpdate={handleUpdate}
-                    fieldName="residence_address"
-                    isValid={isFieldValid('residence_address', userComplete.residence_address)}
-                />
-
-                <FormInput
-                    label="Telefono de residencia"
-                    initialValue={formatFieldValue('residence_phone_number', userComplete.residence_phone_number)}
-                    required={true}
-                    onUpdate={handleUpdate}
-                    fieldName="residence_phone_number"
-                    isValid={isFieldValid('residence_phone_number', userComplete.residence_phone_number)}
-                />
+                <SelectEmpresa />
             </div>
         </>
     )

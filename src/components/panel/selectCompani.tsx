@@ -111,7 +111,7 @@ const SelectEmpresa = ({ isRegister, onChange, defaultValue }: SelectEmpresaProp
 
     // Modo normal: versión completa del componente
     return (
-        <div className="w-full mt-6">
+        <div className="w-full mt-0">
             <HeaderTitlesPerfil
                 title={"Entidad a la que pertenece"}
             />

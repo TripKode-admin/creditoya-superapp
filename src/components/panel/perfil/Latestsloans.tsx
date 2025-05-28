@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, FilePlus2, RefreshCcw } from "lucide-react";
+import { ArrowUpRight, CircleSlash, FilePlus2, RefreshCcw } from "lucide-react";
 import HeaderTitlesPerfil from "./headers";
 import usePanel from "@/hooks/usePanel";
 import { useEffect } from "react";
@@ -11,7 +11,6 @@ function LatestLoan() {
         dataReady,
         allFieldsComplete,
         latestLoan,
-        loanMessage,
         isLoadingLoan,
         toggleNewReq,
         refreshUserData,
@@ -30,15 +29,12 @@ function LatestLoan() {
 
     // Set up an effect to refresh user data when profile fields change
     useEffect(() => {
-        // Create an event listener for profile updates
         const handleProfileUpdate = () => {
             refreshUserData();
         };
 
-        // Listen for a custom event that will be triggered when profile is updated
         window.addEventListener('profile-updated', handleProfileUpdate);
 
-        // Clean up the event listener when component unmounts
         return () => {
             window.removeEventListener('profile-updated', handleProfileUpdate);
         };
@@ -57,13 +53,18 @@ function LatestLoan() {
         if (!latestLoan || latestLoan === "" || typeof latestLoan === "string") {
             return (
                 <div className="dark:bg-gray-800 rounded-lg mb-6 mt-2 flex flex-row justify-between bg-gray-50 px-4 py-3 border border-gray-100 dark:border-gray-800 gap-5">
-                    <div>
-                        <div className="flex flex-row gap-1">
-                            <h3 className="text-lg font-semibold mb-0.5 text-gray-800 dark:text-gray-200 grid place-content-center">Sin Prestamos Activos</h3>
+                    <div className="flex flex-row gap-3 items-center">
+                        <div>
+                            <CircleSlash size={30} className="text-red-500 drop-shadow-md" />
                         </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Realiza un prestamo en menos de 5 minutos
-                        </p>
+                        <div>
+                            <div className="flex flex-row gap-1">
+                                <h3 className="text-lg font-semibold mb-0.5 text-gray-800 dark:text-gray-200 grid place-content-center">Sin Prestamos Activos</h3>
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                Realiza un prestamo en menos de 5 minutos
+                            </p>
+                        </div>
                     </div>
                     <div className="grid place-content-center">
                         <div
@@ -103,40 +104,17 @@ function LatestLoan() {
 
     return (
         <>
-            <HeaderTitlesPerfil
-                title="Préstamos"
-                bio="Administra tus préstamos activos y solicita nuevos préstamos"
-            />
-
-            {/* Redirect if user profile is incomplete */}
+            {/* Contenido principal cuando el perfil está completo */}
             {dataReady && allFieldsComplete && (
-                <div className="mb-6">
-                    {renderLoanSection()}
-                </div>
-            )}
-
-            {/* Show message if profile is incomplete */}
-            {dataReady && !allFieldsComplete && (
-                <div className="dark:bg-gray-800 rounded-lg mb-6 mt-2 flex flex-row justify-between bg-gray-50 px-4 py-3 border border-gray-100 dark:border-gray-800 gap-5">
-                    <div>
-                        <div className="flex flex-row gap-1">
-                            <h3 className="text-lg font-semibold mb-0.5 text-gray-800 dark:text-gray-200 grid place-content-center">Perfil incompleto</h3>
-                        </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Completa tu perfil para poder solicitar préstamos.
-                        </p>
-                        <p className="text-xs mt-2 text-gray-400">¡Datos listos? Recarga o pulsa para verificar.</p>
+                <>
+                    <HeaderTitlesPerfil
+                        title="Tus Préstamos"
+                        bio="Administra tus préstamos activos y solicita nuevos préstamos"
+                    />
+                    <div className="mb-6">
+                        {renderLoanSection()}
                     </div>
-                    <div className="grid place-content-center">
-                        <button
-                            onClick={() => window.location.reload()}
-                            className="hover:bg-gray-100 cursor-pointer rounded-md border border-gray-200 shadow p-1"
-                            aria-label="Recargar página"
-                        >
-                            <RefreshCcw size={20} className="text-red-400 drop-shadow-md" />
-                        </button>
-                    </div>
-                </div>
+                </>
             )}
 
             {/* Loading state */}

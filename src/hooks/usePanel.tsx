@@ -3,7 +3,7 @@
 import { useClientAuth } from "@/context/AuthContext";
 import { ILoanApplication, User, UserCompany } from "@/types/full";
 import axios from "axios";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState, useTransition, useCallback } from "react";
 import useLoadingState from "./useLoading";
 import { useRouter } from "next/navigation";
 
@@ -37,6 +37,7 @@ export interface UsePanelReturn {
     refreshLoanData: () => void;
     toggleNewReq: (isReq?: boolean) => void;
     getLatestLoan: () => Promise<void>;
+    updateFieldAndRefresh: (fieldUpdates: Partial<User>) => void;
 }
 
 /**
@@ -88,7 +89,6 @@ function usePanel(): UsePanelReturn {
      */
     const getLatestLoan = async (): Promise<void> => {
         if (!user?.id) {
-            // console.log("No hay ID de usuario disponible");
             return;
         }
 
@@ -117,41 +117,18 @@ function usePanel(): UsePanelReturn {
     };
 
     /**
-     * Obtiene y procesa los datos completos del usuario
-     * 
-     * @param {string} userId - ID del usuario
-     */
-    const getFullDataClient = async (userId: string) => {
-        await executeWithLoading(async () => {
-            try {
-                startTransition(async () => {
-                    const userData = await fetchUserData(userId);
-                    setUserComplete(userData);
-                    updateFieldStatuses(userData);
-                    setDataReady(true);
-                });
-            } catch (error) {
-                console.error("Failed to fetch user data:", error);
-            }
-        });
-    };
-
-    /**
      * Actualiza el estado de completitud de los campos del usuario
      * 
      * @param {User | null} userData - Datos del usuario
      */
-    const updateFieldStatuses = (userData: User | null) => {
+    const updateFieldStatuses = useCallback((userData: User | null) => {
         if (!userData) return;
 
         const statuses: FieldStatus[] = [];
 
         // Mapeo de campos principales
         const fieldMappings: Record<string, string> = {
-            "city": "Ciudad",
-            "residence_address": "Dirección de residencia",
-            "genre": "Género",
-            "phone_whatsapp": "Numero de WhatsApp",
+            "birth_day": "Fecha de nacimiento",
         };
 
         // Mapeo de campos de documentos
@@ -166,7 +143,9 @@ function usePanel(): UsePanelReturn {
             const isCompleted = !(
                 userData[key as keyof typeof userData] === "No definidos" ||
                 userData[key as keyof typeof userData] === "No definido" ||
-                userData[key as keyof typeof userData] === null
+                userData[key as keyof typeof userData] === null ||
+                userData[key as keyof typeof userData] === undefined ||
+                userData[key as keyof typeof userData] === ""
             );
 
             statuses.push({
@@ -188,7 +167,9 @@ function usePanel(): UsePanelReturn {
                 const isCompleted = !(
                     document[key as keyof typeof document] === "No definidos" ||
                     document[key as keyof typeof document] === "No definido" ||
-                    document[key as keyof typeof document] === null
+                    document[key as keyof typeof document] === null ||
+                    document[key as keyof typeof document] === undefined ||
+                    document[key as keyof typeof document] === ""
                 );
 
                 statuses.push({
@@ -207,7 +188,64 @@ function usePanel(): UsePanelReturn {
         }
 
         setFieldStatuses(statuses);
+
+        // Actualizar inmediatamente el estado de completitud
+        const allComplete = statuses.length > 0 && statuses.every(field => field.completed);
+        setAllFieldsComplete(allComplete);
+
+        // Disparar evento personalizado cuando todos los campos estén completos
+        if (allComplete && userData) {
+            // Usar setTimeout para asegurar que el estado se actualice antes del evento
+            setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('profile-completed', {
+                    detail: { userComplete: userData }
+                }));
+            }, 100);
+        }
+    }, []);
+
+    /**
+     * Obtiene y procesa los datos completos del usuario
+     * 
+     * @param {string} userId - ID del usuario
+     */
+    const getFullDataClient = async (userId: string) => {
+        await executeWithLoading(async () => {
+            try {
+                startTransition(async () => {
+                    const userData = await fetchUserData(userId);
+                    setUserComplete(userData);
+                    updateFieldStatuses(userData);
+                    setDataReady(true);
+                });
+            } catch (error) {
+                console.error("Failed to fetch user data:", error);
+            }
+        });
     };
+
+    /**
+     * Nueva función para actualizar campos y refrescar inmediatamente
+     * 
+     * @param {Partial<User>} fieldUpdates - Campos actualizados
+     */
+    const updateFieldAndRefresh = useCallback((fieldUpdates: Partial<User>) => {
+        if (userComplete) {
+            // Actualizar el estado local inmediatamente
+            const updatedUser = { ...userComplete, ...fieldUpdates };
+            setUserComplete(updatedUser);
+
+            // Actualizar los estados de campos inmediatamente
+            updateFieldStatuses(updatedUser);
+
+            // Refrescar desde el servidor después de un delay más corto
+            setTimeout(() => {
+                if (user?.id) {
+                    refreshUserData();
+                }
+            }, 500); // Reducido de 1000ms a 500ms
+        }
+    }, [userComplete, user?.id, updateFieldStatuses]);
 
     // Efecto para cargar los datos del usuario cuando esté disponible
     useEffect(() => {
@@ -227,11 +265,12 @@ function usePanel(): UsePanelReturn {
         fetchLoanData();
     }, [user?.id, loanFetched]);
 
-    // Efecto para actualizar el estado de completitud general
+    // Efecto para re-evaluar cuando userComplete cambia
     useEffect(() => {
-        const allComplete = fieldStatuses.length > 0 && fieldStatuses.every(field => field.completed);
-        setAllFieldsComplete(allComplete);
-    }, [fieldStatuses]);
+        if (userComplete) {
+            updateFieldStatuses(userComplete);
+        }
+    }, [userComplete, updateFieldStatuses]);
 
     /**
      * Actualiza los datos del usuario
@@ -288,6 +327,7 @@ function usePanel(): UsePanelReturn {
         refreshLoanData,
         toggleNewReq,
         getLatestLoan,
+        updateFieldAndRefresh,
     };
 }
 
