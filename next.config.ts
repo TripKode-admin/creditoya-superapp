@@ -6,13 +6,15 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: '50mb' // Aumentado para PDFs grandes
     },
-    // Turbopack está habilitado por defecto en Next.js 15
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
+    // Removido turbo de experimental ya que ahora es estable
+  },
+
+  // Nueva configuración de Turbopack (ya no experimental)
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
       },
     },
   },
