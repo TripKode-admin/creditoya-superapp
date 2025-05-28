@@ -6,17 +6,6 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: '50mb' // Aumentado para PDFs grandes
     },
-    // Removido turbo de experimental ya que ahora es estable
-  },
-
-  // Nueva configuración de Turbopack (ya no experimental)
-  turbopack: {
-    rules: {
-      '*.svg': {
-        loaders: ['@svgr/webpack'],
-        as: '*.js',
-      },
-    },
   },
 
   images: {
@@ -31,34 +20,31 @@ const nextConfig: NextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
-  // Configuración de webpack como fallback para cuando no uses Turbopack
+  // Configuración de webpack (necesaria para build de producción)
   webpack(config, { dev, isServer }) {
-    // Solo aplicar en desarrollo o cuando Turbopack no esté disponible
-    if (dev || !process.env.TURBOPACK) {
-      config.module.rules.push({
-        test: /\.svg$/i,
-        issuer: /\.[jt]sx?$/,
-        use: [
-          {
-            loader: '@svgr/webpack',
-            options: {
-              svgoConfig: {
-                plugins: [
-                  {
-                    name: 'preset-default',
-                    params: {
-                      overrides: {
-                        removeViewBox: false,
-                      },
+    config.module.rules.push({
+      test: /\.svg$/i,
+      issuer: /\.[jt]sx?$/,
+      use: [
+        {
+          loader: '@svgr/webpack',
+          options: {
+            svgoConfig: {
+              plugins: [
+                {
+                  name: 'preset-default',
+                  params: {
+                    overrides: {
+                      removeViewBox: false,
                     },
                   },
-                ],
-              },
+                },
+              ],
             },
           },
-        ],
-      });
-    }
+        },
+      ],
+    });
 
     return config;
   },
