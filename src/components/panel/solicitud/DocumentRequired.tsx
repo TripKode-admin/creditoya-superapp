@@ -46,7 +46,7 @@ function DocumentsRequired({ loan }: { loan: ILoanApplication }) {
     };
 
     return (
-        <div className="border border-gray-100 dark:border-gray-700 dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="border border-gray-100 dark:border-gray-800 dark:bg-gray-800/10 rounded-lg shadow p-6">
             <div className="flex items-center mb-7">
                 <div className="mr-3 dark:bg-gray-700 bg-green-100/70 p-2 rounded-full">
                     <Files className="text-green-500 dark:text-green-400 w-4 h-4 drop-shadow" />
@@ -59,7 +59,7 @@ function DocumentsRequired({ loan }: { loan: ILoanApplication }) {
             
             {allDocumentsUndefined ? (
                 <div className="flex items-center justify-center py-8">
-                    <div className="text-center bg-gray-50 grow py-6 px-6">
+                    <div className="text-center bg-gray-50 rounded-md dark:bg-gray-900 grow py-6 px-6">
                         <div className="mb-4">
                             <CheckCircle className="w-12 h-12 drop-shadow-md text-green-500 mx-auto" />
                         </div>
