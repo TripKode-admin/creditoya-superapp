@@ -1,221 +1,329 @@
 "use client"
 
-import { User, Moon, Sun, Menu, X, CircleX, UserCircle } from 'lucide-react';
+import { User, Moon, Sun, Menu, X, CircleX, UserCircle, ChevronDown } from 'lucide-react';
 import creditoyaLogo from "@/assets/logos/creditoya_logo_minimalist.png"
 import Image from 'next/image';
-import { useDarkMode } from '@/context/DarkModeContext'; // Import the dark mode context
+import { useDarkMode } from '@/context/DarkModeContext';
 import { useClientAuth } from '@/context/AuthContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 function NavBar() {
     const [scrolled, setScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const router = useRouter();
+    const userMenuRef = useRef<HTMLDivElement>(null);
+    const mobileMenuRef = useRef<HTMLDivElement>(null);
 
-    // Use the global dark mode context
     const { darkmode, changeDarkMode } = useDarkMode();
+    const { user, isAuthenticated, logout } = useClientAuth();
 
-    const {
-        user,
-        isAuthenticated,
-        logout,
-    } = useClientAuth();
-
-    // Handle scroll effect
+    // Handle scroll effect with throttling
     useEffect(() => {
+        let ticking = false;
+        
         const handleScroll = () => {
-            if (window.scrollY > 10) {
-                setScrolled(true);
-            } else {
-                setScrolled(false);
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    setScrolled(window.scrollY > 10);
+                    ticking = false;
+                });
+                ticking = true;
             }
         };
 
-        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Función para verificar si la URL del avatar es válida
+    // Close menus when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+                setIsUserMenuOpen(false);
+            }
+            if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+                setIsMenuOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Close mobile menu on escape key
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                setIsMenuOpen(false);
+                setIsUserMenuOpen(false);
+            }
+        };
+
+        document.addEventListener('keydown', handleEscape);
+        return () => document.removeEventListener('keydown', handleEscape);
+    }, []);
+
+    // Prevent body scroll when mobile menu is open
+    useEffect(() => {
+        if (isMenuOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isMenuOpen]);
+
     const isValidAvatar = (avatarUrl: string | undefined | null): boolean => {
         return Boolean(avatarUrl && avatarUrl !== "No definido" && avatarUrl.trim() !== "");
     };
 
+    const handleNavigation = (path: string) => {
+        router.push(path);
+        setIsMenuOpen(false);
+        setIsUserMenuOpen(false);
+    };
+
+    const handleLogout = () => {
+        logout();
+        setIsMenuOpen(false);
+        setIsUserMenuOpen(false);
+    };
+
+    const UserAvatar = ({ size = 32, className = "" }: { size?: number; className?: string }) => (
+        isValidAvatar(user?.avatar) ? (
+            <Image
+                src={user?.avatar as string}
+                alt="Avatar del usuario"
+                width={size}
+                height={size}
+                className={`object-cover rounded-full border-2 border-green-500 transition-all duration-200 ${className}`}
+                priority={true}
+            />
+        ) : (
+            <div 
+                className={`rounded-full border-2 border-green-500 flex items-center justify-center bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 transition-all duration-200 ${className}`}
+                style={{ width: size, height: size }}
+            >
+                <UserCircle size={size * 0.7} className="text-green-500" />
+            </div>
+        )
+    );
+
     return (
-        <div className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${scrolled
-            ? 'backdrop-blur-md bg-white/80 dark:bg-gray-900/80'
-            : 'bg-white dark:bg-black'
-            }`}>
-            {/* Barra de navegación principal */}
-            <nav className="py-3 px-4 md:px-6 max-w-7xl mx-auto text-gray-800 dark:text-gray-100">
-                <div className="flex items-center justify-between">
-                    {/* Logo */}
-                    <div className="flex items-center">
-                        <Image
-                            priority={true}
-                            src={creditoyaLogo.src}
-                            alt="logo"
-                            width={150}
-                            height={80}
-                            className='drop-shadow-md dark:invert dark:brightness-[0.87] dark:hue-rotate-180 h-auto w-auto'
-                            onClick={() => router.push("/")}
-                        />
-                    </div>
+        <>
+            {/* Backdrop overlay for mobile menu */}
+            {isMenuOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
+                    onClick={() => setIsMenuOpen(false)}
+                    aria-hidden="true"
+                />
+            )}
 
-                    {/* Navegación escritorio */}
-                    <div className="hidden md:flex items-center space-x-3">
-                        {isAuthenticated ? (
-                            <div>
-                                <div className='flex flex-row gap-2'>
-                                    <div className='grid place-content-center'>
-                                        {isValidAvatar(user?.avatar) ? (
-                                            <Image
-                                                src={user?.avatar as string}
-                                                alt={"avatar"}
-                                                width={500}
-                                                height={500}
-                                                className='object-cover drop-shadow-sm w-8 h-8 rounded-full border-2 border-green-500'
-                                                priority={true}
-                                            />
-                                        ) : (
-                                            <div className="w-8 h-8 rounded-full border-2 border-green-500 grid place-content-center bg-gray-100 dark:bg-gray-700">
-                                                <UserCircle size={24} className="text-green-500" />
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className='flex flex-col'>
-                                        <p className='text-sm font-semibold'>{user?.names} {user?.firstLastName}</p>
-                                        <p className='text-xs font-thin text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 cursor-pointer' onClick={() => router.push("/panel/perfil")}>Ver Cuenta</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <button onClick={() => router.push("/auth")} className="bg-green-50 hover:bg-green-100 cursor-pointer px-3 py-2 text-sm rounded-md text-green-500 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-green-300">
-                                <span className="flex items-center font-normal">
-                                    <User size={16} className="mr-2 text-green-500 dark:text-green-300" />
-                                    Cuenta
-                                </span>
+            <header 
+                className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ease-out ${
+                    scrolled
+                        ? 'backdrop-blur-md bg-white/90 dark:bg-gray-900/90 shadow-sm border-b border-gray-200/50 dark:border-gray-700/50'
+                        : 'bg-white dark:bg-black'
+                }`}
+                role="banner"
+            >
+                <nav 
+                    className="py-3 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+                    role="navigation"
+                    aria-label="Navegación principal"
+                >
+                    <div className="flex items-center justify-between">
+                        {/* Logo */}
+                        <div className="flex items-center flex-shrink-0">
+                            <button
+                                onClick={() => handleNavigation("/")}
+                                className="focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded-md transition-all duration-200 hover:scale-105"
+                                aria-label="Ir a la página principal"
+                            >
+                                <Image
+                                    priority={true}
+                                    src={creditoyaLogo.src}
+                                    alt="Logo de Creditoya"
+                                    width={150}
+                                    height={80}
+                                    className="h-10 w-auto sm:h-12 drop-shadow-sm dark:invert dark:brightness-[0.87] dark:hue-rotate-180 transition-all duration-200"
+                                />
                             </button>
-                        )}
+                        </div>
 
-                        <button
-                            onClick={changeDarkMode}
-                            className="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 transition-colors p-2 rounded-md border border-gray-100 dark:border-gray-700"
-                            aria-label={darkmode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
-                        >
-                            {darkmode ? <Sun className='drop-shadow-md' size={18} /> : <Moon size={18} className='drop-shadow-md' />}
-                        </button>
-
-                        {isAuthenticated && (
-                            <div className='bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-100 dark:border-gray-700 p-2 rounded-md cursor-pointer' onClick={logout}>
-                                <div className='flex flex-row gap-2'>
-                                    <div className='grid place-content-center'>
-                                        <CircleX size={20} className='drop-shadow-md text-red-400' />
-                                    </div>
-                                    <p className='text-xs grid place-content-center pb-0.5 font-semibold text-red-400'>Cerrar Sesion</p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Botón móvil */}
-                    <button
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        className="md:hidden text-gray-600 dark:text-gray-200"
-                        aria-label="Menú"
-                    >
-                        {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
-                    </button>
-                </div>
-            </nav >
-
-            {/* Menú móvil */}
-            {
-                isMenuOpen && (
-                    <div className="md:hidden border-t border-gray-100 dark:border-gray-800 bg-gray-50/95 dark:bg-black backdrop-blur-sm">
-                        <div className="max-w-6xl mx-auto py-3 px-4">
-                            {/* Perfil de usuario en móvil */}
+                        {/* Desktop Navigation */}
+                        <div className="hidden md:flex items-center space-x-3 lg:space-x-4">
                             {isAuthenticated ? (
-                                <div className="mb-3 pb-3 border-b border-opacity-10 border-gray-400">
-                                    <div className="flex items-center gap-3">
-                                        {isValidAvatar(user?.avatar) ? (
-                                            <Image
-                                                src={user?.avatar as string}
-                                                alt={"avatar"}
-                                                width={40}
-                                                height={40}
-                                                className='object-cover drop-shadow-sm w-10 h-10 rounded-full border-2 border-green-500'
-                                                priority={true}
-                                            />
-                                        ) : (
-                                            <div className="w-10 h-10 rounded-full border-2 border-green-500 grid place-content-center bg-gray-100 dark:bg-gray-700">
-                                                <UserCircle size={30} className="text-green-500" />
-                                            </div>
-                                        )}
-                                        <div className="flex flex-col">
-                                            <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                <div className="relative" ref={userMenuRef}>
+                                    <button
+                                        onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                                        className="flex items-center space-x-3 py-2 px-3 rounded-lg transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                                        aria-expanded={isUserMenuOpen}
+                                        aria-haspopup="true"
+                                    >
+                                        <UserAvatar size={32} />
+                                        <div className="flex flex-col items-start min-w-0">
+                                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate max-w-[120px]">
                                                 {user?.names} {user?.firstLastName}
                                             </p>
-                                            <p
-                                                className='text-xs font-thin text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 cursor-pointer'
-                                                onClick={() => {
-                                                    router.push("/panel/perfil");
-                                                    setIsMenuOpen(false);
-                                                }}
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                Mi cuenta
+                                            </p>
+                                        </div>
+                                        <ChevronDown 
+                                            size={16} 
+                                            className={`text-gray-400 transition-transform duration-200 ${
+                                                isUserMenuOpen ? 'rotate-180' : ''
+                                            }`} 
+                                        />
+                                    </button>
+
+                                    {/* User dropdown menu */}
+                                    {isUserMenuOpen && (
+                                        <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-10">
+                                            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                                                <div className="flex items-center space-x-3">
+                                                    <UserAvatar size={40} />
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                                                            {user?.names} {user?.firstLastName}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                            {user?.email}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <button
+                                                onClick={() => handleNavigation("/panel/perfil")}
+                                                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
                                             >
-                                                Ver Cuenta
+                                                Ver perfil
+                                            </button>
+                                            
+                                            <button
+                                                onClick={handleLogout}
+                                                className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-150 flex items-center space-x-2"
+                                            >
+                                                <CircleX size={16} />
+                                                <span>Cerrar sesión</span>
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <button 
+                                    onClick={() => handleNavigation("/auth")} 
+                                    className="flex items-center space-x-2 bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/30 px-4 py-2 rounded-lg text-green-600 dark:text-green-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 font-medium"
+                                >
+                                    <User size={16} />
+                                    <span>Iniciar sesión</span>
+                                </button>
+                            )}
+
+                            {/* Theme toggle */}
+                            <button
+                                onClick={changeDarkMode}
+                                className="p-2 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 border border-gray-200 dark:border-gray-700"
+                                aria-label={darkmode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+                            >
+                                {darkmode ? <Sun size={18} /> : <Moon size={18} />}
+                            </button>
+                        </div>
+
+                        {/* Mobile menu button */}
+                        <button
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            className="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                            aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
+                            aria-expanded={isMenuOpen}
+                        >
+                            {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                        </button>
+                    </div>
+                </nav>
+
+                {/* Mobile Menu */}
+                {isMenuOpen && (
+                    <div 
+                        ref={mobileMenuRef}
+                        className="md:hidden border-t border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md"
+                        role="menu"
+                    >
+                        <div className="max-w-6xl mx-auto py-4 px-4 space-y-4">
+                            {/* User section */}
+                            {isAuthenticated ? (
+                                <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
+                                    <div className="flex items-center space-x-3 mb-3">
+                                        <UserAvatar size={48} />
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-base font-semibold text-gray-900 dark:text-gray-100 truncate">
+                                                {user?.names} {user?.firstLastName}
+                                            </p>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                                                {user?.email}
                                             </p>
                                         </div>
                                     </div>
+                                    
+                                    <button
+                                        onClick={() => handleNavigation("/panel/perfil")}
+                                        className="w-full text-left py-3 px-4 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 border border-gray-200 dark:border-gray-700"
+                                        role="menuitem"
+                                    >
+                                        Ver perfil completo
+                                    </button>
                                 </div>
                             ) : (
-                                <div className="mb-3 pb-3 border-b border-opacity-10 border-gray-400">
+                                <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
                                     <button
-                                        onClick={() => {
-                                            router.push("/auth");
-                                            setIsMenuOpen(false);
-                                        }}
-                                        className="flex items-center py-2 px-3 rounded-md w-full text-gray-800 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                                        onClick={() => handleNavigation("/auth")}
+                                        className="flex items-center justify-center space-x-2 w-full py-3 px-4 rounded-lg bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/30 text-green-600 dark:text-green-400 transition-all duration-200 font-medium"
+                                        role="menuitem"
                                     >
-                                        <User size={16} className="mr-2 text-green-500 dark:text-green-300" />
-                                        <span>Iniciar Sesión</span>
+                                        <User size={18} />
+                                        <span>Iniciar sesión</span>
                                     </button>
                                 </div>
                             )}
 
-                            <div className="flex items-center justify-between py-2">
-                                <span className="text-sm text-gray-700 dark:text-gray-300">
-                                    Modo {darkmode ? 'oscuro' : 'claro'}
+                            {/* Theme toggle */}
+                            <div className="flex items-center justify-between py-3 px-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Tema {darkmode ? 'oscuro' : 'claro'}
                                 </span>
                                 <button
                                     onClick={changeDarkMode}
-                                    className="text-green-600 dark:text-green-400"
+                                    className="p-2 rounded-md text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all duration-200"
                                     aria-label={darkmode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
                                 >
-                                    {darkmode ? <Sun size={16} /> : <Moon size={16} />}
+                                    {darkmode ? <Sun size={18} /> : <Moon size={18} />}
                                 </button>
                             </div>
 
-                            {/* Botón de cerrar sesión en móvil */}
+                            {/* Logout button */}
                             {isAuthenticated && (
-                                <div className="mt-3 pt-3 border-t border-opacity-10 border-gray-400">
-                                    <button
-                                        onClick={() => {
-                                            logout();
-                                            setIsMenuOpen(false);
-                                        }}
-                                        className="flex items-center justify-center gap-2 py-2 px-3 rounded-md w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
-                                    >
-                                        <CircleX size={16} className="text-red-400" />
-                                        <span className="text-sm font-semibold text-red-400">Cerrar Sesión</span>
-                                    </button>
-                                </div>
+                                <button
+                                    onClick={handleLogout}
+                                    className="flex items-center justify-center space-x-2 w-full py-3 px-4 rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-all duration-200 font-medium"
+                                    role="menuitem"
+                                >
+                                    <CircleX size={18} />
+                                    <span>Cerrar sesión</span>
+                                </button>
                             )}
                         </div>
                     </div>
-                )
-            }
-        </div >
+                )}
+            </header>
+        </>
     );
 }
 
