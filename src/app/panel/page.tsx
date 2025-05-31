@@ -146,7 +146,7 @@ function PanelComponent() {
                         <section className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 mb-6">
                             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                                 {/* Search Bar */}
-                                <div className="relative flex-1 max-w-md">
+                                <div className="relative flex-1 max-w-md" data-tour="search-bar">
                                     <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                                     <input
                                         type="text"
@@ -158,7 +158,7 @@ function PanelComponent() {
                                 </div>
 
                                 {/* Filters and Controls */}
-                                <div className="flex flex-wrap items-center gap-3">
+                                <div className="flex flex-wrap items-center gap-3" data-tour="filters">
                                     {/* Status Filter */}
                                     <div className="flex items-center gap-2">
                                         <Filter size={16} className="text-gray-400" />
@@ -196,7 +196,7 @@ function PanelComponent() {
                                     </div>
 
                                     {/* View Mode Toggle */}
-                                    <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                                    <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1" data-tour="view-mode">
                                         <button
                                             onClick={() => setViewMode('list')}
                                             className={`p-2 rounded-md transition-all duration-200 ${viewMode === 'list'
@@ -247,6 +247,7 @@ function PanelComponent() {
                                 `}
                                 role="region"
                                 aria-label="Lista de solicitudes de préstamo"
+                                data-tour="loans-section"
                             >
                                 {filteredAndSortedLoans.map((loan) => (
                                     <CardRequest

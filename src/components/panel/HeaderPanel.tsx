@@ -1,6 +1,7 @@
 import usePanel from "@/hooks/usePanel";
 import { CircleHelp, CircleMinus, CirclePlus, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { startTutorial } from "../drivejs/ConfigStart";
 
 function HeaderPanel({ isReq, isOpen }: { isReq?: boolean, isOpen?: boolean }) {
     const router = useRouter();
@@ -16,7 +17,7 @@ function HeaderPanel({ isReq, isOpen }: { isReq?: boolean, isOpen?: boolean }) {
                 {/* Compact Header Row */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                     {/* Title Section */}
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="flex items-center gap-3 min-w-0 flex-1" data-tour="main-title">
                         <div className={`
                             w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl shadow-lg flex items-center justify-center shrink-0
                             ${isOpen
@@ -44,6 +45,7 @@ function HeaderPanel({ isReq, isOpen }: { isReq?: boolean, isOpen?: boolean }) {
                         {/* Primary Action */}
                         <button
                             onClick={handleOpenNewReq}
+                            data-tour="new-request-btn"
                             className={`
                                 group inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl 
                                 font-semibold text-sm sm:text-base transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]
@@ -68,11 +70,11 @@ function HeaderPanel({ isReq, isOpen }: { isReq?: boolean, isOpen?: boolean }) {
                         {/* Help Button */}
                         {!isReq && (
                             <button
-                                onClick={() => router.push("/panel/guia")}
+                                onClick={startTutorial}
                                 className="group inline-flex items-center gap-2 px-3 sm:px-4 py-2.5 text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 hover:shadow-md backdrop-blur-sm"
                             >
                                 <CircleHelp className="w-4 h-4 group-hover:rotate-12 transition-transform duration-200" />
-                                <span className="hidden sm:inline font-medium">Ayuda</span>
+                                <span className="hidden sm:inline font-medium">Tutorial</span>
                             </button>
                         )}
                     </div>
