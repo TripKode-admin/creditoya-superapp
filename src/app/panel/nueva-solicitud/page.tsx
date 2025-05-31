@@ -19,7 +19,7 @@ function NewReqPage() {
         <>
             <main className="pt-20 dark:bg-black min-h-dvh">
                 <div className="max-w-7xl mx-auto py-3 px-4">
-                    <HeaderPanel isReq={true} />
+                    <HeaderPanel isOpen={true} isReq={true} />
                     <FormNewReq />
                 </div>
             </main>
