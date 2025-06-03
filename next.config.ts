@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true
   },
-  assetPrefix: './',
+  // assetPrefix: './',
   distDir: 'mobile-dist'
 };
 

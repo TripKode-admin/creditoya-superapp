@@ -1,251 +1,418 @@
 "use client"
 
-import Image from "next/image";
-import logoCY from "@/assets/logos/only_object_logo.png";
-import useAuth from "@/hooks/useAuth";
-import SelectEmpresa from "@/components/panel/selectCompani";
-import { UserCompany } from "@/types/full";
-import { ShieldCheck } from "lucide-react";
+import React, { useState, memo, useCallback } from 'react';
+import { ShieldCheck, Eye, EyeOff, Building2, Mail, Lock, User, Check, AlertCircle, LucideIcon } from 'lucide-react';
+import Image from 'next/image';
+import logoCY from "@/assets/logos/only_object_logo.png"
+import useAuth from '@/hooks/useAuth';
+
+interface InputFieldProps {
+    id: string;
+    name: string;
+    type?: string;
+    label: string;
+    placeholder: string;
+    value: string;
+    onChange: (value: string) => void;
+    required?: boolean;
+    autoComplete?: string;
+    icon?: LucideIcon;
+    showPasswordToggle?: boolean;
+    error?: string;
+}
+
+// Memoizamos el componente InputField
+const InputField = memo<InputFieldProps>(({
+    id,
+    name,
+    type = 'text',
+    label,
+    placeholder,
+    value,
+    onChange,
+    required = false,
+    autoComplete,
+    icon: Icon,
+    showPasswordToggle = false,
+    error
+}) => {
+    const [showPassword, setShowPassword] = useState(false);
+    const hasError = !!error;
+    const hasValue = value && value.length > 0;
+
+    return (
+        <div className="space-y-2">
+            <label
+                htmlFor={id}
+                className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors"
+            >
+                {label}
+                {required && <span className="text-red-500 ml-1">*</span>}
+            </label>
+            <div className="relative">
+                {Icon && (
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Icon className={`h-4 w-4 transition-colors ${hasError ? 'text-red-400 dark:text-red-300' :
+                            hasValue ? 'text-green-500 dark:text-green-400' :
+                                'text-gray-400 dark:text-gray-500'
+                            }`} />
+                    </div>
+                )}
+                <input
+                    id={id}
+                    name={name}
+                    type={showPasswordToggle && showPassword ? 'text' : type}
+                    autoComplete={autoComplete}
+                    required={required}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    className={`
+                        w-full text-sm px-3 py-3 
+                        ${Icon ? 'pl-10' : ''} 
+                        ${(showPasswordToggle || (hasValue && !hasError)) ? 'pr-10' : ''}
+                        bg-white dark:bg-gray-800 
+                        border rounded-lg
+                        focus:outline-none focus:ring-2 focus:ring-offset-1 
+                        transition-all duration-200 ease-in-out
+                        ${hasError
+                            ? 'border-red-300 focus:border-red-500 focus:ring-red-200 dark:border-red-600 dark:focus:border-red-400 dark:focus:ring-red-800/30'
+                            : hasValue
+                                ? 'border-green-300 focus:border-green-500 focus:ring-green-200 dark:border-green-600 dark:focus:border-green-400 dark:focus:ring-green-800/30'
+                                : 'border-gray-300 focus:border-green-500 focus:ring-green-200 dark:border-gray-600 dark:focus:border-green-400 dark:focus:ring-green-800/30'
+                        }
+                        text-gray-900 dark:text-gray-100
+                        placeholder-gray-500 dark:placeholder-gray-400
+                        dark:focus:ring-offset-gray-800
+                    `}
+                    placeholder={placeholder}
+                    aria-invalid={hasError ? 'true' : 'false'}
+                    aria-describedby={hasError ? `${id}-error` : undefined}
+                />
+
+                {/* Right side icons container */}
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center gap-2">
+                    {/* Password toggle button */}
+                    {showPasswordToggle && (
+                        <button
+                            type="button"
+                            className="flex items-center justify-center"
+                            onClick={() => setShowPassword(!showPassword)}
+                        >
+                            {showPassword ? (
+                                <EyeOff className="h-4 w-4 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" />
+                            ) : (
+                                <Eye className="h-4 w-4 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" />
+                            )}
+                        </button>
+                    )}
+
+                    {/* Validation check icon */}
+                    {hasValue && !hasError && !showPasswordToggle && (
+                        <div className="flex items-center justify-center pointer-events-none">
+                            <Check className="h-4 w-4 text-green-500 dark:text-green-400" />
+                        </div>
+                    )}
+                </div>
+            </div>
+            {hasError && (
+                <p id={`${id}-error`} className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {error}
+                </p>
+            )}
+        </div>
+    );
+});
+
+InputField.displayName = 'InputField';
 
 function AuthPage() {
     const {
         isLogin,
-        error,
-        handleSubmit,
+        email,
+        password,
         names,
         firstLastName,
         secondLastName,
-        password,
-        email,
+        currentCompanie,
         isLoading,
+        error,
+        isRecovery,
+        isActiveRecovery,
+        validationErrors,
         setIsLogin,
-        setNames,
-        setFirstLastName,
-        setSecondLastName,
-        setEmail,
-        setPassword,
+        handleEmailChange,
+        handlePasswordChange,
+        handleNamesChange,
+        handleFirstLastNameChange,
+        handleSecondLastNameChange,
         handleCompanyChange,
+        handleSubmit,
         generateMagicRecovery,
         handleRecoveryPassword,
-        currentCompanie,
-        isRecovery,
-        isActiveRecovery
+        showPassword,
+        setShowPassword,
+        companies
     } = useAuth();
 
+    // Memoizamos el handler del password toggle
+    const handlePasswordToggle = useCallback(() => {
+        setShowPassword(!showPassword);
+    }, [showPassword, setShowPassword]);
+
     return (
-        <main className="flex flex-col md:flex-row min-h-screen dark:bg-black overflow-hidden">
-            {/* Panel izquierdo (logo e información) */}
-            <div className="hidden md:block md:w-1/2 lg:w-2/5 dark:bg-black p-4 fixed left-0 top-0 h-full">
-                <div className="flex flex-col justify-center items-center h-full">
-                    <div className="max-w-md mx-auto text-center">
-                        <div className="mb-6 flex justify-center">
-                            <Image
-                                src={logoCY}
-                                alt="Logo"
-                                width={120}
-                                height={120}
-                                priority
-                                className="object-contain drop-shadow-md"
-                            />
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black flex">
+            {/* Left Panel - Logo and Info */}
+            <div className="hidden lg:flex lg:w-2/5 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-green-600 via-green-700 to-green-800 dark:from-green-800 dark:via-green-900 dark:to-black"></div>
+                <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
+
+                <div className="relative z-10 flex flex-col justify-center items-center p-12 text-white">
+                    <div className="text-center space-y-6">
+                        {/* Logo */}
+                        <div className="w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-4 bg-gray-50 dark:bg-gray-800">
+                            <Image src={logoCY} alt={"logo"} className="w-12 h-12" />
                         </div>
-                        <h2 className="text-xl lg:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Credito Ya</h2>
-                        <p className="text-sm lg:text-base text-gray-600 dark:text-gray-300 max-w-xs mx-auto font-thin">
-                            Gestiona tu solicitud de préstamo desde cualquier lugar, en cualquier momento.
-                        </p>
+
+                        <div>
+                            <h1 className="text-3xl font-bold mb-3">Credito Ya</h1>
+                            <p className="text-green-100 dark:text-green-200 text-lg leading-relaxed max-w-md">
+                                Gestiona tu solicitud de préstamo desde cualquier lugar, en cualquier momento.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Panel derecho (formulario) */}
-            <div className="w-full md:w-1/2 md:ml-auto lg:w-3/5 flex items-center justify-center p-4 md:p-6 lg:p-8 dark:bg-black min-h-screen overflow-y-auto">
-                <div className="w-full max-w-md py-6">
-                    {/* Logo móvil (visible solo en móvil) */}
-                    <div className="md:hidden flex justify-center mb-4 sm:pt-0 pt-8">
-                        <Image
-                            src={logoCY}
-                            alt="Logo"
-                            width={100}
-                            height={100}
-                            priority
-                            className="object-contain"
-                        />
+            {/* Right Panel - Form */}
+            <div className="flex-1 flex items-start lg:items-center justify-center p-6 lg:p-12 min-h-screen overflow-y-auto">
+                <div className="w-full max-w-md py-8 lg:py-0">
+                    {/* Mobile Logo */}
+                    <div className="lg:hidden text-center mb-6 mt-10">
+                        <div className="w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-4 bg-gray-50 dark:bg-gray-800">
+                            <Image src={logoCY} alt={"logo"} className="w-12 h-12" />
+                        </div>
                     </div>
 
-                    <div className="space-y-1 mb-6 mt-10">
-                        <h1 className="text-xl font-medium text-gray-700 dark:text-gray-200 text-center">
+                    {/* Header */}
+                    <div className="text-center sm:mt-20 mb-6 lg:mb-8">
+                        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-3">
                             {isLogin && !isRecovery && "Bienvenido de nuevo"}
-                            {!isLogin && !isRecovery && "Registro"}
-                            {isRecovery && "Recuperacion de contraseña"}
+                            {!isLogin && !isRecovery && "Crear cuenta"}
+                            {isRecovery && "Recuperar contraseña"}
                         </h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+                        <p className="text-gray-600 dark:text-gray-300 text-sm lg:text-base">
                             {isLogin && !isRecovery && "Ingresa tus credenciales para acceder"}
                             {!isLogin && !isRecovery && "Completa tus datos para crear una cuenta"}
-                            {isRecovery && "Recupera el acceso a tu cuenta y a tus datos personales"}
+                            {isRecovery && "Te enviaremos las instrucciones por correo"}
                         </p>
                     </div>
 
+                    {/* Error Message */}
                     {error && (
-                        <div className="p-2 text-sm bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md mb-4">
-                            {"Credenciales inválidas, verifica tus datos e intenta nuevamente."}
+                        <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-lg">
+                            <div className="flex items-center gap-2">
+                                <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                            </div>
                         </div>
                     )}
 
-                    <form onSubmit={isRecovery ? handleRecoveryPassword : handleSubmit} className="space-y-3">
-                        {!isLogin && !isRecovery && (
-                            <>
+                    {/* Success Recovery Message */}
+                    {isActiveRecovery && (
+                        <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 rounded-lg">
+                            <div className="flex items-start gap-3">
+                                <ShieldCheck className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
                                 <div>
-                                    <label htmlFor="names" className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
-                                        Nombres
-                                    </label>
-                                    <input
-                                        id="names"
-                                        name="names"
-                                        type="text"
-                                        autoComplete="name"
-                                        required={!isLogin}
-                                        value={names}
-                                        onChange={(e) => setNames(e.target.value)}
-                                        className="w-full text-base text-gray-700 dark:text-gray-200 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-green-400 focus:border-green-400"
-                                        placeholder="Nombres"
-                                    />
+                                    <h3 className="font-semibold text-sm text-blue-900 dark:text-blue-100 mb-1">
+                                        ¡Recuperación completada!
+                                    </h3>
+                                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                                        Instrucciones enviadas a tu correo electrónico. Verifica tu bandeja de entrada.
+                                    </p>
                                 </div>
+                            </div>
+                        </div>
+                    )}
 
-                                <div>
-                                    <label htmlFor="firstLastName" className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
-                                        Primer Apellido
-                                    </label>
-                                    <input
+                    {/* Form */}
+                    <form onSubmit={isRecovery ? handleRecoveryPassword : handleSubmit} className="space-y-4">
+                        {/* Registration Fields */}
+                        {!isLogin && !isRecovery && (
+                            <div className="space-y-4">
+                                <InputField
+                                    id="names"
+                                    name="names"
+                                    label="Nombres"
+                                    placeholder="Ingresa tus nombres"
+                                    value={names}
+                                    onChange={handleNamesChange}
+                                    required={!isLogin}
+                                    autoComplete="given-name"
+                                    icon={User}
+                                    error={validationErrors.names}
+                                />
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <InputField
                                         id="firstLastName"
                                         name="firstLastName"
-                                        type="text"
-                                        required={!isLogin}
-                                        value={firstLastName}
-                                        onChange={(e) => setFirstLastName(e.target.value)}
-                                        className="w-full text-base text-gray-700 dark:text-gray-200 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-green-400 focus:border-green-400"
+                                        label="Primer apellido"
                                         placeholder="Primer apellido"
+                                        value={firstLastName}
+                                        onChange={handleFirstLastNameChange}
+                                        required={!isLogin}
+                                        autoComplete="family-name"
+                                        icon={User}
+                                        error={validationErrors.firstLastName}
                                     />
-                                </div>
 
-                                <div>
-                                    <label htmlFor="secondLastName" className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
-                                        Segundo Apellido (opcional)
-                                    </label>
-                                    <input
+                                    <InputField
                                         id="secondLastName"
                                         name="secondLastName"
-                                        type="text"
+                                        label="Segundo apellido"
+                                        placeholder="Segundo apellido"
                                         value={secondLastName}
-                                        onChange={(e) => setSecondLastName(e.target.value)}
-                                        className="w-full text-base text-gray-700 dark:text-gray-200 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-green-400 focus:border-green-400"
-                                        placeholder="Segundo apellido (opcional)"
+                                        onChange={handleSecondLastNameChange}
+                                        autoComplete="family-name"
+                                        icon={User}
                                     />
                                 </div>
 
-                                <div>
-                                    <label htmlFor="company" className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
-                                        Empresa asociada
+                                {/* Company Select */}
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                                        Empresa asociada <span className="text-red-500">*</span>
                                     </label>
-                                    <SelectEmpresa isRegister onChange={handleCompanyChange} defaultValue={currentCompanie as UserCompany} />
-                                </div>
-                            </>
-                        )}
-
-                        {!isActiveRecovery ? (
-                            <>
-                                <div>
-                                    <label htmlFor="email" className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
-                                        Correo electrónico
-                                    </label>
-                                    <input
-                                        id="email"
-                                        name="email"
-                                        type="email"
-                                        autoComplete="email"
-                                        required
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full text-base text-gray-700 dark:text-gray-200 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-green-400 focus:border-green-400"
-                                        placeholder="nombre@empresa.com"
-                                    />
-                                </div>
-
-                                {!isRecovery && (
-                                    <div>
-                                        <label htmlFor="password" className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
-                                            Contraseña
-                                        </label>
-                                        <input
-                                            id="password"
-                                            name="password"
-                                            type="password"
-                                            autoComplete={isLogin ? "current-password" : "new-password"}
+                                    <div className="relative">
+                                        <Building2 className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                                        <select
+                                            value={currentCompanie || ''}
+                                            onChange={(e) => {
+                                                const selectedCompany = companies.find(c => c.value === e.target.value);
+                                                if (selectedCompany) {
+                                                    handleCompanyChange(selectedCompany.value);
+                                                }
+                                            }}
+                                            className="w-full pl-10 pr-4 py-3 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-200 dark:focus:ring-green-800/30 focus:border-green-500 dark:focus:border-green-400 text-gray-900 dark:text-gray-100 dark:focus:ring-offset-gray-800"
                                             required
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            className="w-full text-base text-gray-700 dark:text-gray-200 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-green-400 focus:border-green-400"
-                                            placeholder="••••••••"
-                                        />
-                                    </div>
-                                )}
-
-                                {isLogin && !isRecovery && (
-                                    <div className="text-right" onClick={() => generateMagicRecovery({})}>
-                                        <button type="button" className="text-xs text-green-600 dark:text-green-400 hover:underline">
-                                            ¿Olvidaste tu contraseña?
-                                        </button>
-                                    </div>
-                                )}
-
-                                {isRecovery && (
-                                    <div className="text-right" onClick={() => generateMagicRecovery({ isCancel: true })}>
-                                        <button type="button" className="text-xs text-green-600 dark:text-green-400 hover:underline">
-                                            Cancelar recuperacion de contraseña
-                                        </button>
-                                    </div>
-                                )}
-                            </>
-                        ) : (
-                            <div className="grid place-content-center">
-                                <div className="flex flex-row gap-2 bg-gray-100 p-4 rounded-md dark:bg-gray-800">
-                                    <div className="grid place-content-center">
-                                        <ShieldCheck size={35} className="text-blue-300" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <h3 className="font-bold text-sm text-gray-700 dark:text-gray-100">¡RECUPERACIÓN COMPLETADA!</h3>
-                                        <p className="text-xs dark:text-gray-400">Instrucciones enviadas a tu correo electrónico. Verifica tu bandeja de entrada para finalizar el proceso de seguridad.</p>
+                                        >
+                                            <option value="">Selecciona tu empresa</option>
+                                            {companies.map((company) => (
+                                                <option key={company.id} value={company.value}>
+                                                    {company.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {currentCompanie && (
+                                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                                <Check className="h-4 w-4 text-green-500 dark:text-green-400" />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
                         )}
 
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full mt-4 py-2 px-4 bg-green-500 text-white text-sm font-medium rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition-colors disabled:opacity-50"
-                        >
-                            {isLogin && !isRecovery && (isLoading ? "Ingresando..." : "Ingresar")}
-                            {!isLogin && !isRecovery && (isLoading ? "Registrando..." : "Registrarse")}
-                            {isRecovery && (isLoading ? "Validando..." : "Validar")}
-                        </button>
+                        {/* Email and Password Fields */}
+                        {!isActiveRecovery && (
+                            <div className="space-y-4">
+                                <InputField
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    label="Correo electrónico"
+                                    placeholder="nombre@empresa.com"
+                                    value={email}
+                                    onChange={handleEmailChange}
+                                    required
+                                    autoComplete="email"
+                                    icon={Mail}
+                                    error={validationErrors.email}
+                                />
+
+                                {!isRecovery && (
+                                    <InputField
+                                        id="password"
+                                        name="password"
+                                        type="password"
+                                        label="Contraseña"
+                                        placeholder="••••••••"
+                                        value={password}
+                                        onChange={handlePasswordChange}
+                                        required
+                                        autoComplete={isLogin ? "current-password" : "new-password"}
+                                        icon={Lock}
+                                        showPasswordToggle
+                                        error={validationErrors.password}
+                                    />
+                                )}
+
+                                {/* Forgot Password Link */}
+                                {isLogin && !isRecovery && (
+                                    <div className="text-right">
+                                        <button
+                                            type="button"
+                                            onClick={() => generateMagicRecovery({})}
+                                            className="text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors"
+                                        >
+                                            ¿Olvidaste tu contraseña?
+                                        </button>
+                                    </div>
+                                )}
+
+                                {/* Cancel Recovery Link */}
+                                {isRecovery && (
+                                    <div className="text-right">
+                                        <button
+                                            type="button"
+                                            onClick={() => generateMagicRecovery({ isCancel: true })}
+                                            className="text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors"
+                                        >
+                                            Cancelar recuperación
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Submit Button */}
+                        {!isActiveRecovery && (
+                            <div className="pt-2">
+                                <button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 dark:bg-green-700 dark:hover:bg-green-600 dark:disabled:bg-green-800 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-green-400 dark:focus:ring-offset-gray-800 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    {isLoading && (
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    )}
+                                    {isLogin && !isRecovery && (isLoading ? "Ingresando..." : "Ingresar")}
+                                    {!isLogin && !isRecovery && (isLoading ? "Registrando..." : "Crear cuenta")}
+                                    {isRecovery && (isLoading ? "Enviando..." : "Enviar instrucciones")}
+                                </button>
+                            </div>
+                        )}
                     </form>
 
+                    {/* Toggle Login/Register */}
                     {!isRecovery && (
-                        <div className="mt-4 text-center pb-8">
-                            <p className="text-gray-600 dark:text-gray-400 text-xs">
+                        <div className="mt-4 text-center pb-8 lg:pb-0">
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
                                 {isLogin ? "¿No tienes una cuenta?" : "¿Ya tienes una cuenta?"}
                                 <button
                                     type="button"
                                     onClick={() => setIsLogin(!isLogin)}
-                                    className="ml-1 text-green-600 dark:text-green-400 hover:underline font-medium"
+                                    className="ml-1 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium transition-colors"
                                 >
-                                    {isLogin && !isRecovery ? "Regístrate" : "Inicia sesión"}
+                                    {isLogin ? "Regístrate" : "Inicia sesión"}
                                 </button>
                             </p>
                         </div>
                     )}
                 </div>
             </div>
-        </main>
+        </div>
     );
 }
 
