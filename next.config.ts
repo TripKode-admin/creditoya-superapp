@@ -5,9 +5,7 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   images: {
     unoptimized: true
-  },
-  // assetPrefix: './',
-  distDir: 'mobile-dist'
+  }
 };
 
 export default nextConfig;
