@@ -79,23 +79,6 @@ function HeaderPanel({ isReq, isOpen }: { isReq?: boolean, isOpen?: boolean }) {
                         )}
                     </div>
                 </div>
-
-                {/* Active Form Indicator */}
-                {isOpen && (
-                    <div className="flex items-center gap-3 p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl sm:rounded-2xl border border-blue-200 dark:border-blue-800/50">
-                        <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-500 rounded-full flex items-center justify-center shrink-0">
-                            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full animate-pulse"></div>
-                        </div>
-                        <div className="min-w-0 flex-1">
-                            <p className="text-xs sm:text-sm font-semibold text-blue-900 dark:text-blue-200">
-                                Formulario activo
-                            </p>
-                            <p className="text-xs text-blue-700 dark:text-blue-300 line-clamp-1 sm:line-clamp-none">
-                                Completa todos los campos para continuar
-                            </p>
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     );

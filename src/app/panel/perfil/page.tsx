@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import LoadingPanel from "@/components/panel/Loading";
 import usePanel from "@/hooks/usePanel";
-import SelectEmpresa from "@/components/panel/selectCompani";
 import VerificationPerfil from "@/components/panel/perfil/Verification";
 import FormDatesPerfil from "@/components/panel/perfil/InputsGroup";
 import PerfilAvatar from "@/components/panel/perfil/avatar";
@@ -23,7 +22,7 @@ function PanelPerfilUser() {
     const [showModal, setShowModal] = useState(false);
 
     // Ref para trackear el estado anterior de allFieldsComplete
-    const prevAllFieldsComplete = useRef<boolean>(false);
+    const prevAllFieldsComplete = useRef<boolean | null>(null);
     const hasShownCompletionModal = useRef<boolean>(false);
 
     // Use this effect to coordinate the rendering of all components
@@ -42,6 +41,13 @@ function PanelPerfilUser() {
 
     // Show modal ONLY when user just completed ALL required fields
     useEffect(() => {
+        console.log('Effect triggered:', {
+            dataReady,
+            allFieldsComplete,
+            prevAllFieldsComplete: prevAllFieldsComplete.current,
+            hasShownCompletionModal: hasShownCompletionModal.current
+        });
+
         // Solo mostrar el modal si:
         // 1. Los datos están listos
         // 2. Todos los campos están completos ahora
@@ -50,30 +56,33 @@ function PanelPerfilUser() {
         if (
             dataReady &&
             allFieldsComplete &&
-            !prevAllFieldsComplete.current &&
+            prevAllFieldsComplete.current === false && // Cambio: verificar explícitamente false
             !hasShownCompletionModal.current
         ) {
+            console.log('Showing completion modal');
             setShowModal(true);
             hasShownCompletionModal.current = true;
         }
 
-        // Actualizar el estado anterior
-        prevAllFieldsComplete.current = allFieldsComplete;
+        // Actualizar el estado anterior solo si dataReady es true
+        if (dataReady) {
+            prevAllFieldsComplete.current = allFieldsComplete;
+        }
     }, [dataReady, allFieldsComplete]);
 
     // Reset the completion modal flag when fields become incomplete again
     useEffect(() => {
-        if (!allFieldsComplete) {
+        if (!allFieldsComplete && dataReady) {
             hasShownCompletionModal.current = false;
         }
-    }, [allFieldsComplete]);
+    }, [allFieldsComplete, dataReady]);
 
     // Close modal handler
     const handleCloseModal = () => {
         setShowModal(false);
     };
 
-    // Modal con confeti - MIGRADO DESDE LatestLoan
+    // Modal con confeti
     const renderConfettiModal = () => {
         if (!showModal) return null;
 
@@ -118,7 +127,7 @@ function PanelPerfilUser() {
 
     return (
         <>
-            {/* Modal de confeti - MIGRADO DESDE LatestLoan */}
+            {/* Modal de confeti */}
             {renderConfettiModal()}
 
             <main className="min-h-dvh dark:bg-black pt-16 pb-12 px-4 sm:pt-20 sm:pb-16 md:pt-24 md:pb-20 lg:pt-32 lg:pb-24">

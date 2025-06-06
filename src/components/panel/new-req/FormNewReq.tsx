@@ -10,7 +10,6 @@ import LoanVerifyToken from "./LoanVerifyToken";
 import { useClientAuth } from "@/context/AuthContext";
 import {
     CreditCard,
-    FileText,
     MapPin,
     User,
     Mail,
@@ -100,19 +99,6 @@ function FormNewReq() {
                                     value={user?.secondLastName}
                                     icon={Fingerprint}
                                 />
-
-                                <div className="pt-4">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg shrink-0">
-                                            <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" />
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <h4 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Firma Digital</h4>
-                                            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-1">Firma para validar tu solicitud</p>
-                                        </div>
-                                    </div>
-                                    <SignaturePad onSave={handleSignature} required />
-                                </div>
                             </div>
                         </div>
 
@@ -246,6 +232,25 @@ function FormNewReq() {
                                 </div>
                             </div>
                         )}
+
+                        {/* Sección: Firma Digital */}
+                        <div className="bg-white dark:bg-gray-800/50 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700/50 backdrop-blur-sm">
+                            <div className="bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 px-4 sm:px-6 py-4 sm:py-5 border-b border-purple-100 dark:border-purple-800/50">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 sm:p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl sm:rounded-2xl shadow-lg shrink-0">
+                                        <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white truncate">Firma Digital</h3>
+                                        <p className="text-sm sm:text-base text-purple-600 dark:text-purple-400 font-medium line-clamp-1">Firma para validar tu solicitud de préstamo</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-4 sm:p-6">
+                                <SignaturePad onSave={handleSignature} required />
+                            </div>
+                        </div>
 
                         {/* Sección: Términos y Condiciones + Submit */}
                         <div className=" dark:border-gray-700/50 backdrop-blur-sm">

@@ -80,14 +80,44 @@ export async function PUT(request: NextRequest) {
     const userId = searchParams.get('user_id');
 
     // Get update data from request
-    const { field, value } = await request.json();
+    const requestData = await request.json();
 
-    console.log("API Route - Datos recibidos:", { field, value });
+    console.log("API Route - Datos recibidos:", requestData);
 
-    if (!field || value === undefined) {
+    // Handle both old format {field, value} and new format (direct object)
+    let updateData: any;
+
+    if (requestData.field && requestData.value !== undefined) {
+      // Convert old format to new format
+      if (requestData.field === 'Document' && requestData.value && typeof requestData.value === 'object') {
+        // Handle Document field specially
+        if (requestData.value.update) {
+          // Convert Prisma-style update to array format expected by backend
+          const { where, data } = requestData.value.update;
+          updateData = {
+            Document: [{
+              id: where.id,
+              ...data
+            }]
+          };
+        } else {
+          updateData = { Document: requestData.value };
+        }
+      } else {
+        // Handle other fields
+        updateData = { [requestData.field]: requestData.value };
+      }
+    } else {
+      // New format - direct object
+      updateData = requestData;
+    }
+
+    console.log("API Route - Datos procesados:", JSON.stringify(updateData, null, 2));
+
+    if (!updateData || Object.keys(updateData).length === 0) {
       return NextResponse.json({
         success: false,
-        error: 'Field and value are required'
+        error: 'Update data is required'
       }, { status: 400 });
     }
 
@@ -130,15 +160,10 @@ export async function PUT(request: NextRequest) {
 
     const baseURL = process.env.GATEWAY_API || '';
 
-    let payload: any;
+    // Prepare payload compatible with backend service
+    const payload = { ...updateData };
 
-    if (field === 'Document' && value && typeof value === 'object' && value.update) {
-      payload = { [field]: value };
-      console.log("API Route - Payload para Document:", JSON.stringify(payload, null, 2));
-    } else {
-      payload = { [field]: value };
-      console.log("API Route - Payload normal:", JSON.stringify(payload, null, 2));
-    }
+    console.log("API Route - Payload final enviado:", JSON.stringify(payload, null, 2));
 
     const response = await axios.put(
       `${baseURL}/clients/${userId}`,
@@ -150,6 +175,7 @@ export async function PUT(request: NextRequest) {
       success: true,
       data: response.data
     });
+
   } catch (error: any) {
     console.error('Error en petición:', error.response?.status, error.response?.data);
 
@@ -161,10 +187,24 @@ export async function PUT(request: NextRequest) {
       }, { status: 401 });
     }
 
+    if (error.response?.status === 403) {
+      return NextResponse.json({
+        success: false,
+        error: 'No autorizado'
+      }, { status: 403 });
+    }
+
+    if (error.response?.status === 400) {
+      return NextResponse.json({
+        success: false,
+        error: error.response?.data?.message || 'Datos inválidos'
+      }, { status: 400 });
+    }
+
     // Other errors
     return NextResponse.json({
       success: false,
-      error: error.response?.data?.error || error.message || 'Error desconocido'
+      error: error.response?.data?.message || error.message || 'Error desconocido'
     }, { status: error.response?.status || 500 });
   }
 }

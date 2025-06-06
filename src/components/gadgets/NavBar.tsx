@@ -22,7 +22,7 @@ function NavBar() {
     // Handle scroll effect with throttling
     useEffect(() => {
         let ticking = false;
-        
+
         const handleScroll = () => {
             if (!ticking) {
                 requestAnimationFrame(() => {
@@ -105,7 +105,7 @@ function NavBar() {
                 priority={true}
             />
         ) : (
-            <div 
+            <div
                 className={`rounded-full border-2 border-green-500 flex items-center justify-center bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 transition-all duration-200 ${className}`}
                 style={{ width: size, height: size }}
             >
@@ -118,22 +118,21 @@ function NavBar() {
         <>
             {/* Backdrop overlay for mobile menu */}
             {isMenuOpen && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
                     onClick={() => setIsMenuOpen(false)}
                     aria-hidden="true"
                 />
             )}
 
-            <header 
-                className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ease-out ${
-                    scrolled
-                        ? 'backdrop-blur-md bg-white/90 dark:bg-gray-900/90 shadow-sm border-b border-gray-200/50 dark:border-gray-700/50'
-                        : 'bg-white dark:bg-black'
-                }`}
+            <header
+                className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ease-out ${scrolled
+                        ? 'backdrop-blur-lg bg-white/10 dark:bg-black/10 shadow-lg border-b border-white/20 dark:border-white/10'
+                        : 'backdrop-blur-md bg-transparent'
+                    }`}
                 role="banner"
             >
-                <nav 
+                <nav
                     className="py-3 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
                     role="navigation"
                     aria-label="Navegación principal"
@@ -143,7 +142,7 @@ function NavBar() {
                         <div className="flex items-center flex-shrink-0">
                             <button
                                 onClick={() => handleNavigation("/")}
-                                className="focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded-md transition-all duration-200 hover:scale-105"
+                                className="focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:ring-offset-2 focus:ring-offset-transparent rounded-md transition-all duration-200 hover:scale-105"
                                 aria-label="Ir a la página principal"
                             >
                                 <Image
@@ -152,7 +151,7 @@ function NavBar() {
                                     alt="Logo de Creditoya"
                                     width={150}
                                     height={80}
-                                    className="h-10 w-auto sm:h-12 drop-shadow-sm dark:invert dark:brightness-[0.87] dark:hue-rotate-180 transition-all duration-200"
+                                    className="h-10 w-auto sm:h-12 drop-shadow-lg dark:brightness-0 dark:invert transition-all duration-200"
                                 />
                             </button>
                         </div>
@@ -163,54 +162,53 @@ function NavBar() {
                                 <div className="relative" ref={userMenuRef}>
                                     <button
                                         onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                                        className="flex items-center space-x-3 py-2 px-3 rounded-lg transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                                        className="flex items-center space-x-3 py-2 px-3 rounded-lg transition-all duration-200 hover:bg-white/10 dark:hover:bg-white/5 backdrop-blur-sm border border-white/20 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:ring-offset-transparent"
                                         aria-expanded={isUserMenuOpen}
                                         aria-haspopup="true"
                                     >
                                         <UserAvatar size={32} />
                                         <div className="flex flex-col items-start min-w-0">
-                                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate max-w-[120px]">
+                                            <p className="text-sm font-semibold text-gray-900 dark:text-white drop-shadow-md truncate max-w-[120px]">
                                                 {user?.names} {user?.firstLastName}
                                             </p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            <p className="text-xs text-gray-700 dark:text-white/70 drop-shadow-sm">
                                                 Mi cuenta
                                             </p>
                                         </div>
-                                        <ChevronDown 
-                                            size={16} 
-                                            className={`text-gray-400 transition-transform duration-200 ${
-                                                isUserMenuOpen ? 'rotate-180' : ''
-                                            }`} 
+                                        <ChevronDown
+                                            size={16}
+                                            className={`text-gray-700 dark:text-white/70 drop-shadow-sm transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180' : ''
+                                                }`}
                                         />
                                     </button>
 
                                     {/* User dropdown menu */}
                                     {isUserMenuOpen && (
-                                        <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-10">
-                                            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                                        <div className="absolute right-0 mt-2 w-56 bg-white/90 dark:bg-black/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/30 dark:border-white/20 py-2 z-10">
+                                            <div className="px-4 py-3 border-b border-white/20 dark:border-white/10">
                                                 <div className="flex items-center space-x-3">
                                                     <UserAvatar size={40} />
                                                     <div className="min-w-0 flex-1">
-                                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                                                        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                                                             {user?.names} {user?.firstLastName}
                                                         </p>
-                                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                        <p className="text-xs text-gray-600 dark:text-gray-300 truncate">
                                                             {user?.email}
                                                         </p>
                                                     </div>
                                                 </div>
                                             </div>
-                                            
+
                                             <button
                                                 onClick={() => handleNavigation("/panel/perfil")}
-                                                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
+                                                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-white/20 dark:hover:bg-white/10 transition-colors duration-150"
                                             >
                                                 Ver perfil
                                             </button>
-                                            
+
                                             <button
                                                 onClick={handleLogout}
-                                                className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-150 flex items-center space-x-2"
+                                                className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors duration-150 flex items-center space-x-2"
                                             >
                                                 <CircleX size={16} />
                                                 <span>Cerrar sesión</span>
@@ -219,9 +217,9 @@ function NavBar() {
                                     )}
                                 </div>
                             ) : (
-                                <button 
-                                    onClick={() => handleNavigation("/auth")} 
-                                    className="flex items-center space-x-2 bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/30 px-4 py-2 rounded-lg text-green-600 dark:text-green-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 font-medium"
+                                <button
+                                    onClick={() => handleNavigation("/auth")}
+                                    className="flex items-center space-x-2 bg-white/10 hover:bg-white/20 dark:bg-white/10 dark:hover:bg-white/20 backdrop-blur-sm border border-white/30 dark:border-white/30 px-4 py-2 rounded-lg text-gray-900 dark:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:ring-offset-transparent font-medium drop-shadow-lg"
                                 >
                                     <User size={16} />
                                     <span>Iniciar sesión</span>
@@ -231,7 +229,7 @@ function NavBar() {
                             {/* Theme toggle */}
                             <button
                                 onClick={changeDarkMode}
-                                className="p-2 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 border border-gray-200 dark:border-gray-700"
+                                className="p-2 rounded-lg bg-white/10 hover:bg-white/20 dark:bg-white/10 dark:hover:bg-white/20 backdrop-blur-sm border border-white/30 dark:border-white/30 text-gray-900 dark:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:ring-offset-transparent drop-shadow-md"
                                 aria-label={darkmode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
                             >
                                 {darkmode ? <Sun size={18} /> : <Moon size={18} />}
@@ -241,7 +239,7 @@ function NavBar() {
                         {/* Mobile menu button */}
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            className="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                            className="md:hidden p-2 rounded-lg text-gray-900 dark:text-white hover:bg-white/10 dark:hover:bg-white/10 backdrop-blur-sm border border-white/20 dark:border-white/20 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:ring-offset-transparent drop-shadow-md"
                             aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
                             aria-expanded={isMenuOpen}
                         >
@@ -252,40 +250,40 @@ function NavBar() {
 
                 {/* Mobile Menu */}
                 {isMenuOpen && (
-                    <div 
+                    <div
                         ref={mobileMenuRef}
-                        className="md:hidden border-t border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md"
+                        className="md:hidden border-t border-white/20 dark:border-white/10 bg-white/10 dark:bg-black/10 backdrop-blur-lg"
                         role="menu"
                     >
                         <div className="max-w-6xl mx-auto py-4 px-4 space-y-4">
                             {/* User section */}
                             {isAuthenticated ? (
-                                <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
+                                <div className="pb-4 border-b border-white/20 dark:border-white/10">
                                     <div className="flex items-center space-x-3 mb-3">
                                         <UserAvatar size={48} />
                                         <div className="min-w-0 flex-1">
-                                            <p className="text-base font-semibold text-gray-900 dark:text-gray-100 truncate">
+                                            <p className="text-base font-semibold text-gray-900 dark:text-white drop-shadow-md truncate">
                                                 {user?.names} {user?.firstLastName}
                                             </p>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                                            <p className="text-sm text-gray-700 dark:text-white/70 drop-shadow-sm truncate">
                                                 {user?.email}
                                             </p>
                                         </div>
                                     </div>
-                                    
+
                                     <button
                                         onClick={() => handleNavigation("/panel/perfil")}
-                                        className="w-full text-left py-3 px-4 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 border border-gray-200 dark:border-gray-700"
+                                        className="w-full text-left py-3 px-4 rounded-lg text-sm text-gray-900 dark:text-white hover:bg-white/10 dark:hover:bg-white/10 transition-colors duration-150 border border-white/20 dark:border-white/20 backdrop-blur-sm"
                                         role="menuitem"
                                     >
                                         Ver perfil completo
                                     </button>
                                 </div>
                             ) : (
-                                <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
+                                <div className="pb-4 border-b border-white/20 dark:border-white/10">
                                     <button
                                         onClick={() => handleNavigation("/auth")}
-                                        className="flex items-center justify-center space-x-2 w-full py-3 px-4 rounded-lg bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/30 text-green-600 dark:text-green-400 transition-all duration-200 font-medium"
+                                        className="flex items-center justify-center space-x-2 w-full py-3 px-4 rounded-lg bg-white/10 hover:bg-white/20 dark:bg-white/10 dark:hover:bg-white/20 backdrop-blur-sm border border-white/30 dark:border-white/30 text-gray-900 dark:text-white transition-all duration-200 font-medium"
                                         role="menuitem"
                                     >
                                         <User size={18} />
@@ -295,13 +293,13 @@ function NavBar() {
                             )}
 
                             {/* Theme toggle */}
-                            <div className="flex items-center justify-between py-3 px-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <div className="flex items-center justify-between py-3 px-4 rounded-lg border border-white/20 dark:border-white/20 backdrop-blur-sm">
+                                <span className="text-sm font-medium text-gray-900 dark:text-white drop-shadow-sm">
                                     Tema {darkmode ? 'oscuro' : 'claro'}
                                 </span>
                                 <button
                                     onClick={changeDarkMode}
-                                    className="p-2 rounded-md text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all duration-200"
+                                    className="p-2 rounded-md text-gray-900 dark:text-white hover:bg-white/10 dark:hover:bg-white/10 transition-all duration-200"
                                     aria-label={darkmode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
                                 >
                                     {darkmode ? <Sun size={18} /> : <Moon size={18} />}
@@ -312,7 +310,7 @@ function NavBar() {
                             {isAuthenticated && (
                                 <button
                                     onClick={handleLogout}
-                                    className="flex items-center justify-center space-x-2 w-full py-3 px-4 rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-all duration-200 font-medium"
+                                    className="flex items-center justify-center space-x-2 w-full py-3 px-4 rounded-lg bg-red-500/20 hover:bg-red-500/30 backdrop-blur-sm border border-red-500/30 text-red-300 transition-all duration-200 font-medium"
                                     role="menuitem"
                                 >
                                     <CircleX size={18} />
