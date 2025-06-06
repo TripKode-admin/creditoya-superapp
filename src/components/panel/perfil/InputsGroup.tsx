@@ -1,8 +1,9 @@
-"use client"
+"use client";
 
 import usePanelApi from "@/hooks/usePanelApi";
 import FormInput from "../PerfilFormInput";
 import SelectEmpresa from "../selectCompani";
+import { User, UserCheck } from "lucide-react";
 
 function FormDatesPerfil() {
     const {
@@ -20,72 +21,130 @@ function FormDatesPerfil() {
 
     if (userComplete == null) return null;
 
+    // Calculate completion percentage
+    const requiredFields = [
+        userComplete.names,
+        userComplete.firstLastName,
+        userComplete.email,
+        userComplete.birth_day,
+        userComplete.Document?.[0]?.number
+    ];
+    
+    const completedFields = requiredFields.filter(field => 
+        field && field !== "No definido" && field.toString().trim() !== ""
+    ).length;
+    
+    const completionPercentage = Math.round((completedFields / requiredFields.length) * 100);
+
     return (
-        <>
-            <div className="space-y-3 mt-10">
-                <div className="mb-5">
-                    <h3 className="font-semibold text-lg text-gray-600 dark:text-gray-50">Datos Personales</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 font-light">Información para procesar tus solicitudes de crédito.</p>
+        <div className="space-y-6 sm:space-y-8">
+            {/* Header Section */}
+            <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0 p-2.5 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/20 rounded-xl border border-green-200/50 dark:border-green-700/30">
+                        <User className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">
+                            Datos Personales
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 font-normal mt-1">
+                            Información necesaria para procesar tus solicitudes de crédito de forma segura.
+                        </p>
+                    </div>
+                </div>
+                
+                {/* Progress Indicator */}
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50">
+                    <div className="flex items-center justify-between text-sm mb-2">
+                        <span className="text-gray-600 dark:text-gray-400 font-medium">Progreso del perfil</span>
+                        <div className="flex items-center gap-1.5">
+                            <UserCheck className="w-4 h-4 text-green-500" />
+                            <span className="font-semibold text-green-600 dark:text-green-400">
+                                {completionPercentage}%
+                            </span>
+                        </div>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                        <div 
+                            className="bg-gradient-to-r from-green-500 to-green-600 h-full rounded-full transition-all duration-700 ease-out"
+                            style={{ width: `${completionPercentage}%` }}
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Form Fields */}
+            <div className="space-y-5 sm:space-y-6">
+                {/* Personal Names Grid */}
+                <div className="grid gap-5 sm:gap-6 md:grid-cols-2">
+                    <FormInput
+                        label="Nombres"
+                        initialValue={formatFieldValue('names', userComplete.names)}
+                        required={true}
+                        onUpdate={handleUpdate}
+                        fieldName="names"
+                        isValid={isFieldValid('names', userComplete.names)}
+                    />
+
+                    <FormInput
+                        label="Primer Apellido"
+                        initialValue={formatFieldValue('firstLastName', userComplete.firstLastName)}
+                        required={true}
+                        onUpdate={handleUpdate}
+                        fieldName="firstLastName"
+                        isValid={isFieldValid('firstLastName', userComplete.firstLastName)}
+                    />
                 </div>
 
-                <FormInput
-                    label="Nombres"
-                    initialValue={formatFieldValue('names', userComplete.names)}
-                    required={true}
-                    onUpdate={handleUpdate}
-                    fieldName="names"
-                    isValid={isFieldValid('names', userComplete.names)}
-                />
+                <div className="grid gap-5 sm:gap-6 md:grid-cols-2">
+                    <FormInput
+                        label="Segundo Apellido (Opcional)"
+                        initialValue={formatFieldValue('secondLastName', userComplete.secondLastName)}
+                        onUpdate={handleUpdate}
+                        fieldName="secondLastName"
+                        isValid={true}
+                    />
 
-                <FormInput
-                    label="Primer Apellido"
-                    initialValue={formatFieldValue('firstLastName', userComplete.firstLastName)}
-                    required={true}
-                    onUpdate={handleUpdate}
-                    fieldName="firstLastName"
-                    isValid={isFieldValid('firstLastName', userComplete.firstLastName)}
-                />
+                    <FormInput
+                        label="Correo Electrónico"
+                        initialValue={formatFieldValue('email', userComplete.email)}
+                        required={true}
+                        onUpdate={handleUpdate}
+                        fieldName="email"
+                        isValid={isFieldValid('email', userComplete.email)}
+                    />
+                </div>
 
-                <FormInput
-                    label="Segundo Apellido (Opcional)"
-                    initialValue={formatFieldValue('secondLastName', userComplete.secondLastName)}
-                    onUpdate={handleUpdate}
-                    fieldName="secondLastName"
-                    isValid={true}
-                />
+                {/* Document and Date Grid */}
+                <div className="grid gap-5 sm:gap-6 md:grid-cols-2">
+                    <FormInput
+                        label="Fecha de Nacimiento"
+                        initialValue={formatFieldValue('birth_day', userComplete.birth_day)}
+                        required={true}
+                        type="date"
+                        onUpdate={handleUpdate}
+                        fieldName="birth_day"
+                        isValid={isFieldValid('birth_day', userComplete.birth_day)}
+                    />
 
-                <FormInput
-                    label="Correo Electronico"
-                    initialValue={formatFieldValue('email', userComplete.email)}
-                    required={true}
-                    onUpdate={handleUpdate}
-                    fieldName="email"
-                    isValid={isFieldValid('email', userComplete.email)}
-                />
+                    <FormInput
+                        label="Número de Documento"
+                        initialValue={formatFieldValue('number', userComplete.Document[0].number)}
+                        required={true}
+                        onUpdate={handleUpdate}
+                        fieldName="Document[0].number"
+                        isValid={isFieldValid('number', userComplete.Document[0].number)}
+                    />
+                </div>
 
-                <FormInput
-                    label="Fecha de nacimiento"
-                    initialValue={formatFieldValue('birth_day', userComplete.birth_day)}
-                    required={true}
-                    type="date"
-                    onUpdate={handleUpdate}
-                    fieldName="birth_day"
-                    isValid={isFieldValid('birth_day', userComplete.birth_day)}
-                />
-
-                <FormInput
-                    label="Numero de documento"
-                    initialValue={formatFieldValue('number', userComplete.Document[0].number)}
-                    required={true}
-                    onUpdate={handleUpdate}
-                    fieldName="Document[0].number"
-                    isValid={isFieldValid('number', userComplete.Document[0].number)}
-                />
-
-                <SelectEmpresa />
+                {/* Company Selection */}
+                <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+                    <SelectEmpresa />
+                </div>
             </div>
-        </>
-    )
+        </div>
+    );
 }
 
 export default FormDatesPerfil;

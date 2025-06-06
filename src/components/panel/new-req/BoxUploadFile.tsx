@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, ChangeEvent } from "react";
-import { useDarkMode } from "@/context/DarkModeContext";
+import { Upload, FileText, X } from "lucide-react";
 
 interface BoxUploadFilesProps {
     title: string;
@@ -18,7 +18,6 @@ function BoxUploadFiles({
     required = false,
     onChange
 }: BoxUploadFilesProps) {
-    const { darkmode } = useDarkMode();
     const [file, setFile] = useState<File | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -100,18 +99,9 @@ function BoxUploadFiles({
         validateAndSetFile(droppedFile);
     };
 
-    // Get file icon based on file type
-    const getFileIcon = () => {
-        return (
-            <svg className="w-8 h-8 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
-            </svg>
-        );
-    };
-
     return (
         <div className="flex flex-col w-full">
-            <h5 className={`text-sm font-medium mb-2 ${darkmode ? 'text-gray-300' : 'text-gray-700'}`}>
+            <h5 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                 {title}
                 {required && <span className="text-red-500 ml-1">*</span>}
             </h5>
@@ -127,10 +117,10 @@ function BoxUploadFiles({
           border-2 border-dashed rounded-lg cursor-pointer transition-all
           ${file ? 'h-32' : 'h-40'}
           ${isDragging
-                        ? `${darkmode ? 'border-blue-400 bg-blue-900/20' : 'border-blue-500 bg-blue-50'}`
-                        : `${darkmode ? 'border-gray-600 hover:border-gray-500' : 'border-gray-300 hover:border-gray-400'}`
+                        ? 'border-blue-400 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20'
+                        : 'border-gray-300 hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500'
                     }
-          ${darkmode ? 'bg-gray-800' : 'bg-white'}
+          bg-white dark:bg-gray-800
         `}
             >
                 <input
@@ -144,8 +134,8 @@ function BoxUploadFiles({
 
                 {file ? (
                     <div className="flex flex-col items-center">
-                        {getFileIcon()}
-                        <p className={`mt-2 text-sm font-medium truncate max-w-full ${darkmode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        <FileText className="w-8 h-8 text-blue-500" />
+                        <p className="mt-2 text-sm font-medium truncate max-w-full text-gray-700 dark:text-gray-300">
                             {file.name}
                         </p>
                         <p className="text-xs text-gray-500">
@@ -154,34 +144,19 @@ function BoxUploadFiles({
                         <button
                             type="button"
                             onClick={handleRemoveFile}
-                            className={`
-                mt-2 px-2 py-1 text-xs rounded
-                ${darkmode ? 'bg-red-800 text-red-200 hover:bg-red-700' : 'bg-red-100 text-red-600 hover:bg-red-200'}
-              `}
+                            className="mt-2 px-2 py-1 text-xs rounded bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-800 dark:text-red-200 dark:hover:bg-red-700 flex items-center gap-1"
                         >
+                            <X className="w-3 h-3" />
                             Eliminar
                         </button>
                     </div>
                 ) : (
                     <div className="flex flex-col items-center text-center">
-                        <svg
-                            className={`w-10 h-10 mb-3 ${darkmode ? 'text-gray-400' : 'text-gray-500'}`}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                            />
-                        </svg>
-                        <p className={`mb-1 text-sm ${darkmode ? 'text-gray-300' : 'text-gray-500'}`}>
+                        <Upload className="w-10 h-10 mb-3 text-gray-500 dark:text-gray-400" />
+                        <p className="mb-1 text-sm text-gray-500 dark:text-gray-300">
                             <span className="font-semibold">Haga clic para cargar</span> o arrastre y suelte
                         </p>
-                        <p className={`text-xs ${darkmode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
                             Solo archivos PDF (Máx. {maxSize}MB)
                         </p>
                     </div>
@@ -197,4 +172,4 @@ function BoxUploadFiles({
     );
 }
 
-export default BoxUploadFiles
+export default BoxUploadFiles;

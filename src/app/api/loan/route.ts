@@ -55,6 +55,8 @@ export async function POST(request: NextRequest) {
         const entity = formData.get('entity') as string;
         const bankNumberAccount = formData.get('bankNumberAccount') as string;
         const cantity = formData.get('cantity') as string;
+        const city = formData.get('city') as string;
+        const residence_address = formData.get('residence_address') as string;
         const terms_and_conditions = formData.get('terms_and_conditions') === 'true';
         const isValorAgregado = formData.get('isValorAgregado') === 'true';
 
@@ -147,6 +149,8 @@ export async function POST(request: NextRequest) {
         apiFormData.append('entity', entity);
         apiFormData.append('bankNumberAccount', bankNumberAccount);
         apiFormData.append('cantity', cantity);
+        apiFormData.append('city', city);
+        apiFormData.append('residence_address', residence_address);
         apiFormData.append('terms_and_conditions', terms_and_conditions.toString());
 
         // Only add isValorAgregado if it's true

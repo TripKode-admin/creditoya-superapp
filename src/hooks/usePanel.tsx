@@ -3,7 +3,7 @@
 import { useClientAuth } from "@/context/AuthContext";
 import { ILoanApplication, User, UserCompany } from "@/types/full";
 import axios from "axios";
-import { useEffect, useState, useTransition, useCallback } from "react";
+import { useEffect, useState, useTransition, useCallback, useRef } from "react";
 import useLoadingState from "./useLoading";
 import { useRouter } from "next/navigation";
 
@@ -62,6 +62,9 @@ function usePanel(): UsePanelReturn {
     const [fieldStatuses, setFieldStatuses] = useState<FieldStatus[]>([]);
     const [allFieldsComplete, setAllFieldsComplete] = useState<boolean>(false);
     const [dataReady, setDataReady] = useState<boolean>(false);
+
+    // Ref para evitar múltiples ejecuciones de updateFieldStatuses
+    const isUpdatingFields = useRef<boolean>(false);
 
     /**
      * Obtiene datos completos del usuario desde la API
@@ -122,54 +125,34 @@ function usePanel(): UsePanelReturn {
      * @param {User | null} userData - Datos del usuario
      */
     const updateFieldStatuses = useCallback((userData: User | null) => {
-        if (!userData) return;
+        if (!userData || isUpdatingFields.current) return;
 
-        const statuses: FieldStatus[] = [];
+        isUpdatingFields.current = true;
 
-        // Mapeo de campos principales
-        const fieldMappings: Record<string, string> = {
-            "birth_day": "Fecha de nacimiento",
-        };
+        try {
+            const statuses: FieldStatus[] = [];
 
-        // Mapeo de campos de documentos
-        const documentFieldMappings: Record<string, string> = {
-            "documentSides": "Documento de identidad por ambos lados",
-            "imageWithCC": "Selfie de verificacion de identidad",
-            "number": "Número de documento"
-        };
+            // Mapeo de campos principales
+            const fieldMappings: Record<string, string> = {
+                "birth_day": "Fecha de nacimiento",
+            };
 
-        // Verificar campos principales
-        for (const [key, label] of Object.entries(fieldMappings)) {
-            const isCompleted = !(
-                userData[key as keyof typeof userData] === "No definidos" ||
-                userData[key as keyof typeof userData] === "No definido" ||
-                userData[key as keyof typeof userData] === null ||
-                userData[key as keyof typeof userData] === undefined ||
-                userData[key as keyof typeof userData] === ""
-            );
+            // Mapeo de campos de documentos
+            const documentFieldMappings: Record<string, string> = {
+                "documentSides": "Documento de identidad por ambos lados",
+                "imageWithCC": "Selfie de verificacion de identidad",
+                "number": "Número de documento"
+            };
 
-            statuses.push({
-                name: label,
-                completed: isCompleted
-            });
-        }
-
-        // Verificar si la empresa está asignada
-        statuses.push({
-            name: "Empresa",
-            completed: userData.currentCompanie !== UserCompany.NO
-        });
-
-        // Verificar campos de documentos
-        if (userData.Document && userData.Document.length > 0) {
-            const document = userData.Document[0];
-            for (const [key, label] of Object.entries(documentFieldMappings)) {
+            // Verificar campos principales
+            for (const [key, label] of Object.entries(fieldMappings)) {
+                const value = userData[key as keyof typeof userData];
                 const isCompleted = !(
-                    document[key as keyof typeof document] === "No definidos" ||
-                    document[key as keyof typeof document] === "No definido" ||
-                    document[key as keyof typeof document] === null ||
-                    document[key as keyof typeof document] === undefined ||
-                    document[key as keyof typeof document] === ""
+                    value === "No definidos" ||
+                    value === "No definido" ||
+                    value === null ||
+                    value === undefined ||
+                    value === ""
                 );
 
                 statuses.push({
@@ -177,30 +160,57 @@ function usePanel(): UsePanelReturn {
                     completed: isCompleted
                 });
             }
-        } else {
-            // Si no hay documento, marcar todos los campos como incompletos
-            for (const label of Object.values(documentFieldMappings)) {
-                statuses.push({
-                    name: label,
-                    completed: false
-                });
+
+            // Verificar si la empresa está asignada
+            statuses.push({
+                name: "Empresa",
+                completed: userData.currentCompanie !== UserCompany.NO
+            });
+
+            // Verificar campos de documentos
+            if (userData.Document && userData.Document.length > 0) {
+                const document = userData.Document[0];
+                for (const [key, label] of Object.entries(documentFieldMappings)) {
+                    const value = document[key as keyof typeof document];
+                    const isCompleted = !(
+                        value === "No definidos" ||
+                        value === "No definido" ||
+                        value === null ||
+                        value === undefined ||
+                        value === "" ||
+                        (Array.isArray(value) && value.length === 0)
+                    );
+
+                    statuses.push({
+                        name: label,
+                        completed: isCompleted
+                    });
+                }
+            } else {
+                // Si no hay documento, marcar todos los campos como incompletos
+                for (const label of Object.values(documentFieldMappings)) {
+                    statuses.push({
+                        name: label,
+                        completed: false
+                    });
+                }
             }
-        }
 
-        setFieldStatuses(statuses);
+            setFieldStatuses(statuses);
 
-        // Actualizar inmediatamente el estado de completitud
-        const allComplete = statuses.length > 0 && statuses.every(field => field.completed);
-        setAllFieldsComplete(allComplete);
+            // Calcular si todos los campos están completos
+            const allComplete = statuses.length > 0 && statuses.every(field => field.completed);
 
-        // Disparar evento personalizado cuando todos los campos estén completos
-        if (allComplete && userData) {
-            // Usar setTimeout para asegurar que el estado se actualice antes del evento
-            setTimeout(() => {
-                window.dispatchEvent(new CustomEvent('profile-completed', {
-                    detail: { userComplete: userData }
-                }));
-            }, 100);
+            console.log('Field statuses updated:', {
+                statuses,
+                allComplete,
+                totalFields: statuses.length,
+                completedFields: statuses.filter(f => f.completed).length
+            });
+
+            setAllFieldsComplete(allComplete);
+        } finally {
+            isUpdatingFields.current = false;
         }
     }, []);
 
@@ -212,14 +222,19 @@ function usePanel(): UsePanelReturn {
     const getFullDataClient = async (userId: string) => {
         await executeWithLoading(async () => {
             try {
-                startTransition(async () => {
-                    const userData = await fetchUserData(userId);
+                const userData = await fetchUserData(userId);
+
+                startTransition(() => {
                     setUserComplete(userData);
-                    updateFieldStatuses(userData);
-                    setDataReady(true);
+                    // Usar setTimeout para asegurar que el estado se actualice antes de evaluar campos
+                    setTimeout(() => {
+                        updateFieldStatuses(userData);
+                        setDataReady(true);
+                    }, 100);
                 });
             } catch (error) {
                 console.error("Failed to fetch user data:", error);
+                setDataReady(true); // Marcar como listo aunque haya error para evitar loading infinito
             }
         });
     };
@@ -235,15 +250,17 @@ function usePanel(): UsePanelReturn {
             const updatedUser = { ...userComplete, ...fieldUpdates };
             setUserComplete(updatedUser);
 
-            // Actualizar los estados de campos inmediatamente
-            updateFieldStatuses(updatedUser);
+            // Usar setTimeout para asegurar que el estado se actualice antes de evaluar campos
+            setTimeout(() => {
+                updateFieldStatuses(updatedUser);
+            }, 50);
 
-            // Refrescar desde el servidor después de un delay más corto
+            // Refrescar desde el servidor después de un delay
             setTimeout(() => {
                 if (user?.id) {
                     refreshUserData();
                 }
-            }, 500); // Reducido de 1000ms a 500ms
+            }, 1000);
         }
     }, [userComplete, user?.id, updateFieldStatuses]);
 
@@ -264,13 +281,6 @@ function usePanel(): UsePanelReturn {
 
         fetchLoanData();
     }, [user?.id, loanFetched]);
-
-    // Efecto para re-evaluar cuando userComplete cambia
-    useEffect(() => {
-        if (userComplete) {
-            updateFieldStatuses(userComplete);
-        }
-    }, [userComplete, updateFieldStatuses]);
 
     /**
      * Actualiza los datos del usuario
