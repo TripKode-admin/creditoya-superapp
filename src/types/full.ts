@@ -130,6 +130,8 @@ export type ILoanApplication = {
     bankNumberAccount: string;
     entity: string;
     labor_card?: string;
+    city: string;
+    residence_address: string;
     upid_labor_card?: string;
     terms_and_conditions: boolean;
     signature: string;

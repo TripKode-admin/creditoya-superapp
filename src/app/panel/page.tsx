@@ -18,48 +18,71 @@ function PanelComponent() {
         toggleNewReq
     } = usePanel();
 
-    // console.log(userComplete)
-
     // Show loading state while data is being fetched or processed
-    if (isLoading || !dataReady || !userComplete) return <LoadingPanel message={"Cargando informacion del usuario"} />;
+    if (isLoading || !dataReady || !userComplete) {
+        return <LoadingPanel message={"Cargando información del usuario"} />;
+    }
 
     // Only check for missing fields after data is fully loaded and ready
-    if (dataReady && !allFieldsComplete) return <MissingData />;
+    if (dataReady && !allFieldsComplete) {
+        return <MissingData />;
+    }
+
+    const hasLoans = userComplete.LoanApplication && userComplete.LoanApplication.length > 0;
+
+    const EmptyState = () => (
+        <div className="flex flex-col items-center justify-center flex-grow py-16 px-4">
+            <div className="relative w-48 h-48 sm:w-64 sm:h-64 mb-8">
+                <div className="absolute inset-0 bg-gradient-to-b from-green-100/20 via-blue-100/20 to-transparent dark:from-green-900/10 dark:via-blue-900/10 rounded-full"></div>
+                <Image
+                    src={searchIlustration}
+                    alt="No hay solicitudes"
+                    fill
+                    className="object-contain drop-shadow-sm opacity-70"
+                    priority={true}
+                />
+            </div>
+
+            <div className="text-center max-w-md">
+                <h3 className="text-gray-700 dark:text-gray-200 text-xl font-semibold mb-3">
+                    Sin solicitudes hasta el momento
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm mb-6 leading-relaxed">
+                    Empieza creando tu primera solicitud de préstamo. Es rápido y sencillo.
+                </p>
+
+                <button
+                    onClick={() => toggleNewReq(false)}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 font-medium"
+                >
+                    <Plus size={18} strokeWidth={2.5} />
+                    <span>Nueva solicitud</span>
+                </button>
+            </div>
+        </div>
+    );
 
     return (
-        <main className="pt-26 min-h-dvh dark:bg-black">
-            <div className="max-w-7xl mx-auto py-3 px-4 flex flex-col">
+        <main className="pt-20 min-h-screen bg-gray-50/50 dark:bg-gray-900">
+            <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                 <HeaderPanel />
-                {userComplete.LoanApplication && userComplete.LoanApplication.length === 0 && (
-                    <div className="flex flex-col items-center justify-center flex-grow mt-12 mb-20">
-                        <div className="relative w-64 h-64 opacity-65">
-                            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-50 dark:to-gray-800 opacity-20 rounded-full"></div>
-                            <Image
-                                src={searchIlustration}
-                                alt="No hay solicitudes"
-                                fill
-                                className="object-contain drop-shadow-sm"
-                                priority={true}
-                            />
-                        </div>
-                        <p className="text-gray-600 dark:text-gray-300 text-lg mt-6 font-medium">Sin ninguna solicitud hasta el momento</p>
-                        <p className="text-gray-400 dark:text-gray-500 text-sm mt-2 max-w-md text-center">
-                            Empieza creando tu primera solicitud de préstamo usando el botón superior.
-                        </p>
-                        <button
-                            onClick={() => toggleNewReq(false)}
-                            className="dark:bg-gray-800 dark:hover:bg-gray-700 mt-8 flex items-center gap-2 px-5 py-2.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-all duration-200 shadow-sm"
-                        >
-                            <Plus size={16} strokeWidth={2.5} />
-                            <span className="font-medium">Nueva solicitud</span>
-                        </button>
-                    </div>
-                )}
 
-                {userComplete.LoanApplication && userComplete.LoanApplication.length > 0 && (
-                    <div className="flex flex-col gap-3 mt-7">
-                        {userComplete.LoanApplication.map((loan) => <CardRequest loan={loan} key={loan.id} />)}
-                    </div>
+                {!hasLoans ? (
+                    <EmptyState />
+                ) : (
+                    <section
+                        className="flex flex-col gap-4 mt-10"
+                        role="region"
+                        aria-label="Lista de solicitudes de préstamo"
+                        data-tour="loans-section"
+                    >
+                        {userComplete.LoanApplication.map((loan) => (
+                            <CardRequest
+                                loan={loan}
+                                key={loan.id}
+                            />
+                        ))}
+                    </section>
                 )}
             </div>
         </main>

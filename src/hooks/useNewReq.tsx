@@ -9,8 +9,10 @@ import { useRouter } from "next/navigation";
 type FileField = 'labor_card' | 'fisrt_flyer' | 'second_flyer' | 'third_flyer';
 
 interface FormDataProps {
-    phone: string;
+    phone: string[]; // Cambiado de string a string[]
     entity: string;
+    city: string;
+    residence_address: string;
     bankNumberAccount: string;
     cantity: string;
     signature: string | null;
@@ -42,7 +44,7 @@ const STORAGE_EXPIRATION = 15 * 60 * 1000; // 15 minutos en milisegundos
 
 // Valores iniciales
 const initialFormData: FormDataProps = {
-    phone: "",
+    phone: [], // Cambiado de "" a []
     entity: "",
     bankNumberAccount: "",
     cantity: "",
@@ -52,6 +54,8 @@ const initialFormData: FormDataProps = {
     second_flyer: null,
     third_flyer: null,
     terms_and_conditions: false,
+    city: "",
+    residence_address: "",
 };
 
 const initialState: LoanState = {
@@ -69,6 +73,8 @@ function useFormReq() {
     const { userComplete } = usePanel();
     const router = useRouter();
     const [state, setState] = useState<LoanState>(initialState);
+
+    console.log("useFormReq initialized with state:", state);
 
     // Funciones utilitarias
     const updateState = useCallback((updates: Partial<LoanState>) => {
@@ -109,7 +115,7 @@ function useFormReq() {
         }
     }, []);
 
-    // Verificar localStorage al cargar - FIXED: Added proper dependency array
+    // Verificar localStorage al cargar
     useEffect(() => {
         const checkStoredLoanData = () => {
             try {
@@ -138,8 +144,29 @@ function useFormReq() {
         };
 
         checkStoredLoanData();
-        // Only runs once on component mount
     }, [getLoanData, updateState]);
+
+    // Funciones para manejar números de teléfono
+    const addPhoneNumber = useCallback((phoneNumber: string) => {
+        if (phoneNumber.trim() && !state.formData.phone.includes(phoneNumber.trim())) {
+            updateFormData({
+                phone: [...state.formData.phone, phoneNumber.trim()]
+            });
+        }
+    }, [state.formData.phone, updateFormData]);
+
+    const removePhoneNumber = useCallback((index: number) => {
+        const newPhones = state.formData.phone.filter((_, i) => i !== index);
+        updateFormData({ phone: newPhones });
+    }, [state.formData.phone, updateFormData]);
+
+    const editPhoneNumber = useCallback((index: number, newPhone: string) => {
+        if (newPhone.trim()) {
+            const newPhones = [...state.formData.phone];
+            newPhones[index] = newPhone.trim();
+            updateFormData({ phone: newPhones });
+        }
+    }, [state.formData.phone, updateFormData]);
 
     // Manejadores de eventos
     const handleFieldChange = useCallback((field: keyof FormDataProps, value: any) => {
@@ -165,6 +192,11 @@ function useFormReq() {
             return;
         }
 
+        if (state.formData.phone.length < 2) {
+            alert("Debes agregar al menos 2 números de contacto.");
+            return;
+        }
+
         try {
             updateState({ isCreating: true });
 
@@ -182,13 +214,18 @@ function useFormReq() {
                 apiFormData.append('signature', state.formData.signature);
             }
 
-            apiFormData.append('phone', state.formData.phone);
+            // Convertir array de teléfonos a string para el envío
+            apiFormData.append('phone', JSON.stringify(state.formData.phone));
             apiFormData.append('user_id', userComplete?.id as string);
             apiFormData.append('entity', state.formData.entity);
             apiFormData.append('bankNumberAccount', state.formData.bankNumberAccount);
             apiFormData.append('cantity', state.formData.cantity);
             apiFormData.append('terms_and_conditions', state.formData.terms_and_conditions.toString());
             apiFormData.append('isValorAgregado', (userComplete?.currentCompanie === "valor_agregado").toString());
+            apiFormData.append('city', state.formData.city);
+            apiFormData.append('residence_address', state.formData.residence_address);
+
+            console.log("Enviando datos del formulario:", Object.fromEntries(apiFormData.entries()));
 
             const response = await axios.post("/api/loan", apiFormData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
@@ -234,7 +271,6 @@ function useFormReq() {
         }
     }, [state.preLoanId, userComplete?.id]);
 
-    // FIXED: Added preToken dependency to prevent infinite loop
     const handleCodeChange = useCallback((code: string) => {
         updateState({ preToken: code });
     }, [updateState]);
@@ -258,7 +294,6 @@ function useFormReq() {
             });
             localStorage.removeItem(STORAGE_KEY);
 
-            // FIXED: Using a ref to track redirect instead of a timeout that could cause issues
             const redirectTimer = setTimeout(() => router.push("/panel"), 4000);
             return () => clearTimeout(redirectTimer);
         } else {
@@ -284,8 +319,12 @@ function useFormReq() {
             updateState({ preLoanId: value }), [updateState]),
         handleBankSelect: useCallback((option: string) =>
             handleFieldChange('entity', option), [handleFieldChange]),
-        handleNumberPhone: useCallback((value: string) =>
-            handleFieldChange('phone', value), [handleFieldChange]),
+
+        // Nuevos manejadores para teléfonos
+        addPhoneNumber,
+        removePhoneNumber,
+        editPhoneNumber,
+
         handleBankAccountChange: useCallback((value: string) =>
             handleFieldChange('bankNumberAccount', value), [handleFieldChange]),
         handleCantityChange: useCallback((value: string) =>
@@ -302,7 +341,8 @@ function useFormReq() {
         handleSubmit,
         handleVerifyToken,
         sentToken,
-        storeLoanData
+        storeLoanData,
+        handleFieldChange
     };
 }
 

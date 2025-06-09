@@ -24,7 +24,7 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
 
-# Construir la aplicación con Turbopack
+# Construir la aplicación
 RUN npm run build
 
 # Etapa de producción
@@ -46,7 +46,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # Cambiar al usuario no privilegiado
 USER nextjs
 
-# Exponer puerto (Google Cloud Run usa PORT env variable)
+# Exponer puerto
 EXPOSE 3000
 
 ENV PORT 3000

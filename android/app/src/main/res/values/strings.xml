@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">creditoya</string>
+    <string name="title_activity_main">creditoya</string>
+    <string name="package_name">creditoya.space</string>
+    <string name="custom_url_scheme">creditoya.space</string>
+</resources>
