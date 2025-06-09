@@ -166,12 +166,12 @@ function CardRequest({ loan }: { loan: ILoanApplication }) {
                 }
             }}
         >
-            <div className="p-4">
+            <div className="p-3 sm:p-4">
                 {/* Disbursement Alert Banner */}
                 {isDisbursed && (
                     <div className="mb-3 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
                         <div className="flex items-center gap-2">
-                            <CheckCircle2 size={14} className="text-green-600 dark:text-green-400" />
+                            <CheckCircle2 size={14} className="text-green-600 dark:text-green-400 flex-shrink-0" />
                             <span className="text-xs font-medium text-green-700 dark:text-green-300">
                                 Préstamo desembolsado
                             </span>
@@ -183,7 +183,7 @@ function CardRequest({ loan }: { loan: ILoanApplication }) {
                 {hasNewEvents && (
                     <div className="mb-3 p-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-md">
                         <div className="flex items-center gap-2">
-                            <BellRing size={14} className="text-orange-600 dark:text-orange-400 animate-pulse" />
+                            <BellRing size={14} className="text-orange-600 dark:text-orange-400 animate-pulse flex-shrink-0" />
                             <span className="text-xs font-medium text-orange-700 dark:text-orange-300">
                                 Nuevos eventos en esta solicitud
                             </span>
@@ -191,10 +191,10 @@ function CardRequest({ loan }: { loan: ILoanApplication }) {
                     </div>
                 )}
 
-                {/* Header Row */}
-                <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                        {/* Status Badge with proper styling */}
+                {/* Header Section - Reorganized for mobile */}
+                <div className="mb-3">
+                    {/* Top row: Status badge and notification/arrow */}
+                    <div className="flex items-center justify-between mb-2">
                         <span className={`
                             inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
                             ${statusStyles.textColor} ${statusStyles.bgColor} ${statusStyles.borderColor}
@@ -202,87 +202,88 @@ function CardRequest({ loan }: { loan: ILoanApplication }) {
                             {loan.status}
                         </span>
 
-                        {/* Disbursement Badge */}
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            {/* Disbursement Icon */}
+                            {isDisbursed && (
+                                <div className="p-1.5 bg-green-100 dark:bg-green-900/30 rounded-full">
+                                    <CheckCircle2
+                                        size={16}
+                                        className="text-green-600 dark:text-green-400"
+                                    />
+                                </div>
+                            )}
+
+                            {/* Notification Bell */}
+                            {unreadEventsCount > 0 && (
+                                <button
+                                    onClick={handleNotificationClick}
+                                    className={`
+                                        relative p-1.5 transition-all duration-200 rounded-full
+                                        ${hasRecentEvents
+                                            ? 'text-orange-600 hover:text-orange-700 bg-orange-100 dark:bg-orange-900/30'
+                                            : 'text-orange-500 hover:text-orange-600'
+                                        }
+                                        ${showNotificationPulse ? 'animate-pulse' : ''}
+                                    `}
+                                    aria-label={`${unreadEventsCount} notificaciones sin leer`}
+                                >
+                                    {getNotificationIcon()}
+                                    <span className={`
+                                        absolute -top-1 -right-1 w-4 h-4 text-white text-xs rounded-full 
+                                        flex items-center justify-center font-medium
+                                        ${hasRecentEvents
+                                            ? 'bg-red-600 animate-pulse shadow-lg'
+                                            : 'bg-red-500'
+                                        }
+                                    `}>
+                                        {unreadEventsCount > 9 ? '9+' : unreadEventsCount}
+                                    </span>
+
+                                    {/* Pulse ring for new events */}
+                                    {showNotificationPulse && (
+                                        <span className="absolute inset-0 rounded-full bg-orange-400 opacity-75 animate-ping"></span>
+                                    )}
+                                </button>
+                            )}
+
+                            {/* Arrow */}
+                            <ChevronRight
+                                size={16}
+                                className="text-gray-400 dark:text-gray-500"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Amount and Disbursement badge row */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100 break-words">
+                            {stringToPriceCOP(loan.cantity)}
+                        </h3>
+
+                        {/* Disbursement Badge - Only show on mobile when amount is on separate line */}
                         {isDisbursed && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800 w-fit">
                                 <CheckCircle2 size={10} />
                                 Desembolsado
                             </span>
                         )}
-
-                        <div className="min-w-0 flex-1">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
-                                {stringToPriceCOP(loan.cantity)}
-                            </h3>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                        {/* Disbursement Icon */}
-                        {isDisbursed && (
-                            <div className="p-1.5 bg-green-100 dark:bg-green-900/30 rounded-full">
-                                <CheckCircle2
-                                    size={16}
-                                    className="text-green-600 dark:text-green-400"
-                                />
-                            </div>
-                        )}
-
-                        {/* Notification Bell */}
-                        {unreadEventsCount > 0 && (
-                            <button
-                                onClick={handleNotificationClick}
-                                className={`
-                                    relative p-1.5 transition-all duration-200 rounded-full
-                                    ${hasRecentEvents
-                                        ? 'text-orange-600 hover:text-orange-700 bg-orange-100 dark:bg-orange-900/30'
-                                        : 'text-orange-500 hover:text-orange-600'
-                                    }
-                                    ${showNotificationPulse ? 'animate-pulse' : ''}
-                                `}
-                                aria-label={`${unreadEventsCount} notificaciones sin leer`}
-                            >
-                                {getNotificationIcon()}
-                                <span className={`
-                                    absolute -top-1 -right-1 w-4 h-4 text-white text-xs rounded-full 
-                                    flex items-center justify-center font-medium
-                                    ${hasRecentEvents
-                                        ? 'bg-red-600 animate-pulse shadow-lg'
-                                        : 'bg-red-500'
-                                    }
-                                `}>
-                                    {unreadEventsCount > 9 ? '9+' : unreadEventsCount}
-                                </span>
-
-                                {/* Pulse ring for new events */}
-                                {showNotificationPulse && (
-                                    <span className="absolute inset-0 rounded-full bg-orange-400 opacity-75 animate-ping"></span>
-                                )}
-                            </button>
-                        )}
-
-                        {/* Arrow */}
-                        <ChevronRight
-                            size={16}
-                            className="text-gray-400 dark:text-gray-500"
-                        />
                     </div>
                 </div>
 
-                {/* Info Row */}
-                <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
-                    <div className="flex items-center gap-4">
+                {/* Info Row - Improved mobile layout */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                         {/* Bank */}
-                        <div className="flex items-center gap-1.5">
-                            <Building2 size={12} className="text-gray-400" />
-                            <span className="truncate max-w-24">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                            <Building2 size={12} className="text-gray-400 flex-shrink-0" />
+                            <span className="truncate max-w-20 sm:max-w-24">
                                 {handleKeyToStringBank(loan.entity as BankTypes)}
                             </span>
                         </div>
 
                         {/* Account */}
                         <div className="flex items-center gap-1.5">
-                            <CreditCard size={12} className="text-gray-400" />
+                            <CreditCard size={12} className="text-gray-400 flex-shrink-0" />
                             <span className="font-mono text-xs">
                                 {maskedAccountNumber}
                             </span>
@@ -291,7 +292,7 @@ function CardRequest({ loan }: { loan: ILoanApplication }) {
 
                     {/* Date */}
                     <div className="flex items-center gap-1.5 text-xs">
-                        <Calendar size={12} className="text-gray-400" />
+                        <Calendar size={12} className="text-gray-400 flex-shrink-0" />
                         <span>{formattedDate}</span>
                     </div>
                 </div>

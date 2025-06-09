@@ -53,7 +53,7 @@ function PerfilAvatar() {
     };
 
     const handleCreateLoan = () => {
-        router.push("/panel")
+        router.push("/panel/nueva-solicitud")
     };
 
     if (!userComplete) return null;
