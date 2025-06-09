@@ -201,12 +201,12 @@ function usePanel(): UsePanelReturn {
             // Calcular si todos los campos están completos
             const allComplete = statuses.length > 0 && statuses.every(field => field.completed);
 
-            console.log('Field statuses updated:', {
-                statuses,
-                allComplete,
-                totalFields: statuses.length,
-                completedFields: statuses.filter(f => f.completed).length
-            });
+            // console.log('Field statuses updated:', {
+            //     statuses,
+            //     allComplete,
+            //     totalFields: statuses.length,
+            //     completedFields: statuses.filter(f => f.completed).length
+            // });
 
             setAllFieldsComplete(allComplete);
         } finally {

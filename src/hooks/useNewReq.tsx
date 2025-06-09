@@ -74,7 +74,7 @@ function useFormReq() {
     const router = useRouter();
     const [state, setState] = useState<LoanState>(initialState);
 
-    console.log("useFormReq initialized with state:", state);
+    // console.log("useFormReq initialized with state:", state);
 
     // Funciones utilitarias
     const updateState = useCallback((updates: Partial<LoanState>) => {

@@ -36,7 +36,7 @@ interface Loan {
 
 // Componente para mostrar los eventos de la solicitud
 export const LoanEventsTimeline = ({ loan }: { loan: Loan }) => {
-    console.log(loan);
+    // console.log(loan);
     
     if (!loan.EventLoanApplication || loan.EventLoanApplication.length === 0) {
         return null;

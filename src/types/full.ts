@@ -143,7 +143,7 @@ export type ILoanApplication = {
 
     // Relations
     user: User;
-    generatedDocuments: GeneratedDocument[];
+    GeneratedDocuments: GeneratedDocument[];
     EventLoanApplication: eventLoanApplication[]
 }
 

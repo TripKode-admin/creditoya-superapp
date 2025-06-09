@@ -28,6 +28,7 @@ import { useRouter } from "next/navigation";
 import CardChangeCantity from "@/components/panel/solicitud/CardChangeCantity";
 import CardDocsReject from "@/components/panel/solicitud/CardDocsReject";
 import { LoanEventsTimeline, RejectReasonCard } from "@/components/panel/solicitud/EventsPreview";
+import DownloadContractsButton from "@/components/panel/perfil/Contracts";
 
 function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
     const resolveParams = use(params);
@@ -40,7 +41,9 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
 
     const router = useRouter()
 
-    console.log(loan)
+    // console.log(loan)
+
+    // console.log(`Generate docs Id: ${loan?.GeneratedDocuments}`)
 
     // Función helper para convertir diferentes tipos de valores a booleano
     const isTruthy = (value: boolean | string | number): boolean => {
@@ -278,6 +281,8 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
                     <div className="bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700/50 backdrop-blur-sm">
                         <DocumentsRequired loan={loan} />
                     </div>
+
+                    {loan.status === "Aprobado" && <DownloadContractsButton documentId={loan.GeneratedDocuments?.[0]?.id} />}
                 </div>
 
                 {/* Right Column - Enhanced Personal Info */}

@@ -80,15 +80,6 @@ function StepsComponent() {
                             </div>
                         </div>
                     </div>
-
-                    <div className="grid place-content-center mt-20">
-                        <video src={videoUrl}
-                            controls
-                            width={700}
-                            height={300}
-                            className="rounded-md shadow-md"
-                        />
-                    </div>
                 </div>
             </main>
         </>
