@@ -7,6 +7,9 @@ import VerificationPerfil from "@/components/panel/perfil/Verification";
 import FormDatesPerfil from "@/components/panel/perfil/InputsGroup";
 import PerfilAvatar from "@/components/panel/perfil/avatar";
 import LatestLoan from "@/components/panel/perfil/Latestsloans";
+import { ArrowLeft, UserCheck } from "lucide-react";
+import usePanelApi from "@/hooks/usePanelApi";
+import ProgressPerfilIndicator from "@/components/panel/perfil/ProgressIndicator";
 
 function PanelPerfilUser() {
     const {

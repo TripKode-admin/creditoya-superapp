@@ -26,6 +26,7 @@ import DocumentsRequired from "@/components/panel/solicitud/DocumentRequired";
 import { useRouter } from "next/navigation";
 import CardChangeCantity from "@/components/panel/solicitud/CardChangeCantity";
 import CardDocsReject from "@/components/panel/solicitud/CardDocsReject";
+import { LoanEventsTimeline, RejectReasonCard } from "@/components/panel/solicitud/EventsPreview";
 
 function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
     const resolveParams = use(params);
@@ -159,6 +160,26 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
 
                 {/* Left Column - Enhanced Cards */}
                 <div className="lg:col-span-2 space-y-8">
+
+                    <RejectReasonCard loan={{
+                        ...loan,
+                        EventLoanApplication: loan.EventLoanApplication?.map(event => ({
+                            ...event,
+                            created_at: typeof event.created_at === "string"
+                                ? event.created_at
+                                : event.created_at?.toISOString?.() ?? event.created_at
+                        }))
+                    }} />
+
+                    <LoanEventsTimeline loan={{
+                        ...loan,
+                        EventLoanApplication: loan.EventLoanApplication?.map(event => ({
+                            ...event,
+                            created_at: typeof event.created_at === "string"
+                                ? event.created_at
+                                : event.created_at?.toISOString?.() ?? event.created_at
+                        }))
+                    }} />
 
                     {/* Enhanced Financial Information Card */}
                     <div className="group bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg hover:shadow-xl border border-gray-100 dark:border-gray-700/50 backdrop-blur-sm transition-all duration-300 overflow-hidden">
@@ -355,18 +376,17 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
                     </div>
 
                     {/* Enhanced Application Status Card */}
-                    <div className="bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700/50 backdrop-blur-sm overflow-hidden">
-                        <div className="p-8">
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="p-3 bg-gradient-to-br from-green-400 to-green-600 rounded-xl shadow-md">
-                                    <CalendarClock size={20} className="text-white" />
+                    <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700/50">
+                        <div className="p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="p-2 bg-gradient-to-br from-green-400 to-green-600 rounded-lg">
+                                    <CalendarClock size={16} className="text-white" />
                                 </div>
-                                <h2 className="text-xl dark:text-gray-200 font-bold">Estado de Solicitud</h2>
+                                <h3 className="text-lg dark:text-gray-200 font-semibold">Fecha de Solicitud</h3>
                             </div>
 
-                            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800/50">
-                                <p className="text-green-700 dark:text-green-400 text-sm font-semibold mb-2">Fecha de Solicitud</p>
-                                <p className="font-semibold text-lg dark:text-gray-100">
+                            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 border-l-4 border-green-500">
+                                <p className="font-medium text-gray-900 dark:text-gray-100">
                                     {new Intl.DateTimeFormat('es-CO', {
                                         year: 'numeric',
                                         month: 'long',

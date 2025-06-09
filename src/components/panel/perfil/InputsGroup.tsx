@@ -21,20 +21,6 @@ function FormDatesPerfil() {
 
     if (userComplete == null) return null;
 
-    // Calculate completion percentage
-    const requiredFields = [
-        userComplete.names,
-        userComplete.firstLastName,
-        userComplete.email,
-        userComplete.birth_day,
-        userComplete.Document?.[0]?.number
-    ];
-    
-    const completedFields = requiredFields.filter(field => 
-        field && field !== "No definido" && field.toString().trim() !== ""
-    ).length;
-    
-    const completionPercentage = Math.round((completedFields / requiredFields.length) * 100);
 
     return (
         <div className="space-y-6 sm:space-y-8">
@@ -51,25 +37,6 @@ function FormDatesPerfil() {
                         <p className="text-sm text-gray-600 dark:text-gray-400 font-normal mt-1">
                             Información necesaria para procesar tus solicitudes de crédito de forma segura.
                         </p>
-                    </div>
-                </div>
-                
-                {/* Progress Indicator */}
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50">
-                    <div className="flex items-center justify-between text-sm mb-2">
-                        <span className="text-gray-600 dark:text-gray-400 font-medium">Progreso del perfil</span>
-                        <div className="flex items-center gap-1.5">
-                            <UserCheck className="w-4 h-4 text-green-500" />
-                            <span className="font-semibold text-green-600 dark:text-green-400">
-                                {completionPercentage}%
-                            </span>
-                        </div>
-                    </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-                        <div 
-                            className="bg-gradient-to-r from-green-500 to-green-600 h-full rounded-full transition-all duration-700 ease-out"
-                            style={{ width: `${completionPercentage}%` }}
-                        />
                     </div>
                 </div>
             </div>
