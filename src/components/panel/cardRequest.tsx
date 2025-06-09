@@ -3,7 +3,7 @@
 import { BankTypes, handleKeyToStringBank } from "@/handlers/stringToBank";
 import { stringToPriceCOP } from "@/handlers/stringToCop";
 import { eventLoanApplication, ILoanApplication, LoanStatus } from "@/types/full";
-import { Bell, ChevronRight, Calendar, CreditCard, Building2, BellRing } from "lucide-react";
+import { Bell, ChevronRight, Calendar, CreditCard, Building2, BellRing, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useMemo, useEffect } from "react";
 
@@ -14,32 +14,49 @@ function CardRequest({ loan }: { loan: ILoanApplication }) {
 
     const redirectInfoLoan = () => router.push(`/panel/solicitud/${loan.id}`);
 
+    // Función helper para convertir diferentes tipos de valores a booleano
+    const isTruthy = (value: boolean | string | number): boolean => {
+        if (typeof value === 'boolean') return value;
+        if (typeof value === 'string') {
+            return value.toLowerCase() === 'true' || value === '1';
+        }
+        if (typeof value === 'number') {
+            return value === 1;
+        }
+        return false;
+    };
+
     // Memoized date formatting (more compact)
     const formattedDate = useMemo(() => {
         const date = new Date(loan.created_at);
-        return date.toLocaleDateString('es-ES', { 
-            day: '2-digit', 
-            month: '2-digit', 
-            year: 'numeric' 
+        return date.toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
         });
     }, [loan.created_at]);
+
+    // Check if loan is disbursed
+    const isDisbursed = useMemo(() => {
+        return isTruthy(loan.isDisbursed);
+    }, [loan.isDisbursed]);
 
     // Memoized event count and new events detection
     const { unreadEventsCount, hasRecentEvents } = useMemo(() => {
         const unreadEvents = loan.EventLoanApplication?.filter(
             (event) => event.isAnswered === false
         ) || [];
-        
+
         const unreadCount = unreadEvents.length;
-        
+
         // Check if there are events created in the last 24 hours
         const oneDayAgo = new Date();
         oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-        
-        const recentEvents = unreadEvents.some(event => 
+
+        const recentEvents = unreadEvents.some(event =>
             new Date(event.created_at) > oneDayAgo
         );
-        
+
         return {
             unreadEventsCount: unreadCount,
             hasRecentEvents: recentEvents && unreadCount > 0
@@ -51,12 +68,12 @@ function CardRequest({ loan }: { loan: ILoanApplication }) {
         if (hasRecentEvents) {
             setHasNewEvents(true);
             setShowNotificationPulse(true);
-            
+
             // Auto-hide the pulse animation after 3 seconds
             const timer = setTimeout(() => {
                 setShowNotificationPulse(false);
             }, 3000);
-            
+
             return () => clearTimeout(timer);
         }
     }, [hasRecentEvents]);
@@ -137,6 +154,7 @@ function CardRequest({ loan }: { loan: ILoanApplication }) {
                 hover:bg-gray-50 dark:hover:bg-gray-750
                 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2
                 ${hasNewEvents ? 'ring-2 ring-orange-200 dark:ring-orange-800 shadow-lg' : ''}
+                ${isDisbursed ? 'ring-2 ring-green-200 dark:ring-green-800 shadow-md' : ''}
             `}
             role="button"
             tabIndex={0}
@@ -149,6 +167,18 @@ function CardRequest({ loan }: { loan: ILoanApplication }) {
             }}
         >
             <div className="p-4">
+                {/* Disbursement Alert Banner */}
+                {isDisbursed && (
+                    <div className="mb-3 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
+                        <div className="flex items-center gap-2">
+                            <CheckCircle2 size={14} className="text-green-600 dark:text-green-400" />
+                            <span className="text-xs font-medium text-green-700 dark:text-green-300">
+                                Préstamo desembolsado
+                            </span>
+                        </div>
+                    </div>
+                )}
+
                 {/* New Events Alert Banner */}
                 {hasNewEvents && (
                     <div className="mb-3 p-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-md">
@@ -171,6 +201,15 @@ function CardRequest({ loan }: { loan: ILoanApplication }) {
                         `}>
                             {loan.status}
                         </span>
+
+                        {/* Disbursement Badge */}
+                        {isDisbursed && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800">
+                                <CheckCircle2 size={10} />
+                                Desembolsado
+                            </span>
+                        )}
+
                         <div className="min-w-0 flex-1">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
                                 {stringToPriceCOP(loan.cantity)}
@@ -179,14 +218,24 @@ function CardRequest({ loan }: { loan: ILoanApplication }) {
                     </div>
 
                     <div className="flex items-center gap-2 flex-shrink-0">
+                        {/* Disbursement Icon */}
+                        {isDisbursed && (
+                            <div className="p-1.5 bg-green-100 dark:bg-green-900/30 rounded-full">
+                                <CheckCircle2
+                                    size={16}
+                                    className="text-green-600 dark:text-green-400"
+                                />
+                            </div>
+                        )}
+
                         {/* Notification Bell */}
                         {unreadEventsCount > 0 && (
                             <button
                                 onClick={handleNotificationClick}
                                 className={`
                                     relative p-1.5 transition-all duration-200 rounded-full
-                                    ${hasRecentEvents 
-                                        ? 'text-orange-600 hover:text-orange-700 bg-orange-100 dark:bg-orange-900/30' 
+                                    ${hasRecentEvents
+                                        ? 'text-orange-600 hover:text-orange-700 bg-orange-100 dark:bg-orange-900/30'
                                         : 'text-orange-500 hover:text-orange-600'
                                     }
                                     ${showNotificationPulse ? 'animate-pulse' : ''}
@@ -197,14 +246,14 @@ function CardRequest({ loan }: { loan: ILoanApplication }) {
                                 <span className={`
                                     absolute -top-1 -right-1 w-4 h-4 text-white text-xs rounded-full 
                                     flex items-center justify-center font-medium
-                                    ${hasRecentEvents 
-                                        ? 'bg-red-600 animate-pulse shadow-lg' 
+                                    ${hasRecentEvents
+                                        ? 'bg-red-600 animate-pulse shadow-lg'
                                         : 'bg-red-500'
                                     }
                                 `}>
                                     {unreadEventsCount > 9 ? '9+' : unreadEventsCount}
                                 </span>
-                                
+
                                 {/* Pulse ring for new events */}
                                 {showNotificationPulse && (
                                     <span className="absolute inset-0 rounded-full bg-orange-400 opacity-75 animate-ping"></span>
@@ -213,9 +262,9 @@ function CardRequest({ loan }: { loan: ILoanApplication }) {
                         )}
 
                         {/* Arrow */}
-                        <ChevronRight 
-                            size={16} 
-                            className="text-gray-400 dark:text-gray-500" 
+                        <ChevronRight
+                            size={16}
+                            className="text-gray-400 dark:text-gray-500"
                         />
                     </div>
                 </div>

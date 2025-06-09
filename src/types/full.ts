@@ -136,6 +136,7 @@ export type ILoanApplication = {
     terms_and_conditions: boolean;
     signature: string;
     upSignatureId: string;
+    isDisbursed: string
     status: LoanStatus;
     created_at: Date;
     updated_at: Date;

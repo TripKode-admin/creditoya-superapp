@@ -17,7 +17,8 @@ import {
     ArrowLeft,
     User,
     Copy,
-    ExternalLink
+    ExternalLink,
+    CheckCircle2
 } from "lucide-react";
 import { stringToPriceCOP } from "@/handlers/stringToCop";
 import { BankTypes, handleKeyToStringBank } from "@/handlers/stringToBank";
@@ -38,6 +39,20 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
     } = useLoan({ loanId });
 
     const router = useRouter()
+
+    console.log(loan)
+
+    // Función helper para convertir diferentes tipos de valores a booleano
+    const isTruthy = (value: boolean | string | number): boolean => {
+        if (typeof value === 'boolean') return value;
+        if (typeof value === 'string') {
+            return value.toLowerCase() === 'true' || value === '1';
+        }
+        if (typeof value === 'number') {
+            return value === 1;
+        }
+        return false;
+    };
 
     // Formatear el nombre de la empresa para mostrar
     const formatCompanyName = (company: string): string => {
@@ -97,6 +112,23 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
 
             {/* Enhanced Hero Section - Loan Amount */}
             <div className="max-w-7xl mx-auto mb-8">
+                {/* Disbursement Alert Banner */}
+                {isTruthy(loan.isDisbursed) ? (
+                    <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                        <div className="flex items-center gap-3">
+                            <CheckCircle2 size={20} className="text-green-600 dark:text-green-400" />
+                            <div>
+                                <span className="text-sm font-medium text-green-700 dark:text-green-300">
+                                    Préstamo desembolsado exitosamente
+                                </span>
+                                <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                                    Los fondos han sido transferidos a tu cuenta bancaria
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                ) : null}
+
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-3 sm:p-4 border border-green-100 dark:border-green-800/50 shadow-lg backdrop-blur-sm">
                     <div className="flex justify-between items-center gap-3">
                         <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
@@ -104,9 +136,17 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
                                 <CircleDollarSign className="text-white drop-shadow-sm" size={20} />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="text-gray-600 dark:text-gray-300 text-xs font-medium mb-1">
-                                    Monto Solicitado
-                                </p>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <p className="text-gray-600 dark:text-gray-300 text-xs font-medium">
+                                        Monto Solicitado
+                                    </p>
+                                    {(loan.isDisbursed === "true" || loan.isDisbursed === "1") && (
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800">
+                                            <CheckCircle2 size={10} />
+                                            Desembolsado
+                                        </span>
+                                    )}
+                                </div>
                                 {loan.newCantity ? (
                                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
                                         <h1 className="text-sm sm:text-base font-medium text-gray-400 dark:text-gray-500 line-through">
