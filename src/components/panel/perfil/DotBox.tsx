@@ -9,7 +9,7 @@ const DotBox = ({ status }: { status: LoanStatus }) => {
   const statusColors = {
     'Pendiente': 'text-yellow-500',
     'Aprobado': 'text-green-500',
-    'Aplazado': 'text-blue-500',
+    'Aplazado': 'text-red-500',
     'Borrador': 'text-gray-500',
     'Archivado': 'text-red-500',
   };
