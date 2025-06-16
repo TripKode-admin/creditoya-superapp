@@ -1,11 +1,20 @@
 "use client"
 
+import { continueTutorial } from "@/components/drivejs/ConfigStart";
 import HeaderPanel from "@/components/panel/HeaderPanel"
 import LoadingPanel from "@/components/panel/Loading";
 import FormNewReq from "@/components/panel/new-req/FormNewReq"
 import usePanel from "@/hooks/usePanel";
+import { useEffect } from "react";
 
 function NewReqPage() {
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            continueTutorial();
+        }, 500);
+        return () => clearTimeout(timer);
+    }, []);
 
     const {
         isLoading,

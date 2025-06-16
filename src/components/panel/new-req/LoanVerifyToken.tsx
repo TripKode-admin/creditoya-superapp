@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useFormReq from "@/hooks/useNewReq";
 import VerificationCodeInput from "./VerificationCodeInput";
 import { CircleCheck, Loader2 } from "lucide-react";
+import { proceedToVerification } from "@/components/drivejs/ConfigStart"; // Ajusta la ruta según tu estructura
 
 function LoanVerifyToken({ PreLoanId }: { PreLoanId: string | null }) {
     const {
@@ -14,6 +15,18 @@ function LoanVerifyToken({ PreLoanId }: { PreLoanId: string | null }) {
 
     const [isVerifying, setIsVerifying] = useState(false);
 
+    // Efecto para continuar el tutorial cuando se monte este componente
+    useEffect(() => {
+        // Verificar si el tutorial está activo y debe proceder
+        const tutorialStep = sessionStorage.getItem('tutorial-step');
+        if (tutorialStep === 'submit-step') {
+            // Pequeño delay para asegurar que el DOM esté listo
+            setTimeout(() => {
+                proceedToVerification();
+            }, 100);
+        }
+    }, []);
+
     const handleVerify = async () => {
         setIsVerifying(true);
         await sentToken();
@@ -23,7 +36,7 @@ function LoanVerifyToken({ PreLoanId }: { PreLoanId: string | null }) {
     return (
         <div className="flex items-center justify-center mt-10">
             {!isSuccesVerifyToken && (
-                <div className="rounded-lg p-6 text-center h-full max-w-md w-full">
+                <div className="rounded-lg p-6 text-center h-full max-w-md w-full" data-tour="verification-message">
                     <h2 className="text-2xl font-bold mb-4 dark:text-white">Verificación de Identidad</h2>
                     <p className="text-gray-700 dark:text-gray-400 mb-4">
                         Hemos enviado un código de verificación de 6 dígitos a tu correo electrónico.

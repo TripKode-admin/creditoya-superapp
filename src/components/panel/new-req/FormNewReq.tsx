@@ -63,11 +63,11 @@ function FormNewReq() {
     if (isCreating === false && IsSuccessPreCreate === false) {
         return (
             <div className="min-h-screen w-full mt-10">
-                <div className="w-full max-w-none mx-auto">
+                <div className="w-full max-w-none mx-auto" data-tour="form-section">
                     <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
 
                         {/* Sección: Datos Personales */}
-                        <div className="bg-white dark:bg-gray-800/50 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700/50 backdrop-blur-sm">
+                        <div className="bg-white dark:bg-gray-800/50 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700/50 backdrop-blur-sm" data-tour="personal-data">
                             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 px-4 sm:px-6 py-4 sm:py-5 border-b border-blue-100 dark:border-blue-800/50">
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 sm:p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl sm:rounded-2xl shadow-lg shrink-0">
@@ -103,7 +103,7 @@ function FormNewReq() {
                         </div>
 
                         {/* Sección: Información de Contacto */}
-                        <div className="bg-white dark:bg-gray-800/50 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700/50 backdrop-blur-sm">
+                        <div className="bg-white dark:bg-gray-800/50 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700/50 backdrop-blur-sm" data-tour="contact-info">
                             <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 px-4 sm:px-6 py-4 sm:py-5 border-b border-green-100 dark:border-green-800/50">
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 sm:p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl sm:rounded-2xl shadow-lg shrink-0">
@@ -153,7 +153,7 @@ function FormNewReq() {
                         </div>
 
                         {/* Sección: Información Financiera */}
-                        <div className="bg-white dark:bg-gray-800/50 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700/50 backdrop-blur-sm">
+                        <div className="bg-white dark:bg-gray-800/50 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700/50 backdrop-blur-sm" data-tour="financial-info">
                             <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 px-4 sm:px-6 py-4 sm:py-5 border-b border-emerald-100 dark:border-emerald-800/50">
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 sm:p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl sm:rounded-2xl shadow-lg shrink-0">
@@ -193,7 +193,7 @@ function FormNewReq() {
 
                         {/* Sección: Documentos Requeridos */}
                         {userComplete && userComplete.currentCompanie !== "valor_agregado" && (
-                            <div className="bg-white dark:bg-gray-800/50 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700/50 backdrop-blur-sm">
+                            <div className="bg-white dark:bg-gray-800/50 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700/50 backdrop-blur-sm" data-tour="financial-info">
                                 <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 px-4 sm:px-6 py-4 sm:py-5 border-b border-orange-100 dark:border-orange-800/50">
                                     <div className="flex items-center gap-3">
                                         <div className="p-2 sm:p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl sm:rounded-2xl shadow-lg shrink-0">
@@ -234,7 +234,7 @@ function FormNewReq() {
                         )}
 
                         {/* Sección: Firma Digital */}
-                        <div className="bg-white dark:bg-gray-800/50 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700/50 backdrop-blur-sm">
+                        <div className="bg-white dark:bg-gray-800/50 rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700/50 backdrop-blur-sm" data-tour="digital-signature">
                             <div className="bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 px-4 sm:px-6 py-4 sm:py-5 border-b border-purple-100 dark:border-purple-800/50">
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 sm:p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl sm:rounded-2xl shadow-lg shrink-0">
@@ -253,10 +253,10 @@ function FormNewReq() {
                         </div>
 
                         {/* Sección: Términos y Condiciones + Submit */}
-                        <div className=" dark:border-gray-700/50 backdrop-blur-sm">
+                        <div className="dark:border-gray-700/50 backdrop-blur-sm">
                             <div className="">
                                 {/* Términos y Condiciones */}
-                                <div className="flex items-start gap-3 sm:gap-4 p-4 sm:p-6 bg-gray-50 dark:bg-gray-700/50 rounded-xl sm:rounded-2xl border border-gray-200 dark:border-gray-600/50 mb-6 sm:mb-8">
+                                <div className="flex items-start gap-3 sm:gap-4 p-4 sm:p-6 bg-gray-50 dark:bg-gray-700/50 rounded-xl sm:rounded-2xl border border-gray-200 dark:border-gray-600/50 mb-6 sm:mb-8" data-tour="terms-conditions">
                                     <div className="flex items-center shrink-0 mt-0.5">
                                         <input
                                             type="checkbox"
@@ -295,6 +295,7 @@ function FormNewReq() {
                                             : "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                                         }
                                     `}
+                                    data-tour="submit-button"
                                 >
                                     <div className="flex items-center justify-center gap-3">
                                         <span>Enviar Solicitud</span>

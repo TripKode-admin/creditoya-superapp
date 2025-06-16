@@ -1,14 +1,29 @@
 import usePanel from "@/hooks/usePanel";
 import { CircleHelp, CircleMinus, CirclePlus, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { startTutorial } from "../drivejs/ConfigStart";
+import { startTutorial, proceedTutorial } from "../drivejs/ConfigStart";
 
 function HeaderPanel({ isReq, isOpen }: { isReq?: boolean, isOpen?: boolean }) {
     const router = useRouter();
     const { toggleNewReq } = usePanel();
 
     const handleOpenNewReq = () => {
+        // Verificar si estamos en tutorial y en el paso específico
+        const isTutorialActive = sessionStorage.getItem('tutorial-active') === 'true';
+        const currentStep = sessionStorage.getItem('tutorial-step');
+
+        if (isTutorialActive && currentStep === 'new-request-step') {
+            // Proceder con el tutorial
+            proceedTutorial();
+        }
+
         isReq ? toggleNewReq(isReq) : toggleNewReq();
+    }
+
+    const handlerRunTutorial = () => {
+        // Activar el indicador de tutorial
+        sessionStorage.setItem('tutorial-active', 'true');
+        startTutorial();
     }
 
     return (
@@ -70,7 +85,7 @@ function HeaderPanel({ isReq, isOpen }: { isReq?: boolean, isOpen?: boolean }) {
                         {/* Help Button */}
                         {!isReq && (
                             <button
-                                onClick={startTutorial}
+                                onClick={handlerRunTutorial}
                                 className="group inline-flex items-center gap-2 px-3 sm:px-4 py-2.5 text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 hover:shadow-md backdrop-blur-sm"
                             >
                                 <CircleHelp className="w-4 h-4 group-hover:rotate-12 transition-transform duration-200" />
