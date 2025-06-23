@@ -1,73 +1,158 @@
-# CreditoYa: Tu Aliado Financiero en el Campo
+# CreditoYa Web Application (v2)
 
-¡Bienvenido a CreditoYa! Somos una plataforma digital diseñada para facilitar el acceso a créditos y servicios financieros para los trabajadores del sector agrícola. Nuestra misión es impulsar tu crecimiento y bienestar, ofreciéndote soluciones de crédito oportunas y adaptadas a tus necesidades.
+This repository contains the source code for the CreditoYa web application (v2), a platform built with Next.js and TypeScript. It's designed to be a progressive web app (PWA) and can also be bundled as a native mobile application using Capacitor.
 
-## ¿Qué es CreditoYa?
+## Project Overview
 
-CreditoYa es una aplicación web que te permite solicitar préstamos de manera rápida, sencilla y segura. Olvídate de los trámites complicados y las largas esperas. Con CreditoYa, puedes gestionar tus solicitudes de crédito desde la comodidad de tu hogar o lugar de trabajo.
+CreditoYa is a financial services platform. This codebase represents its second version, focusing on providing a modern, responsive user experience for accessing these services.
 
-## Características Principales para Nuestros Usuarios
+## Tech Stack
 
-*   **Solicitud de Préstamo Sencilla:** Nuestro proceso de solicitud es intuitivo y fácil de seguir. ¡Puedes solicitar tu crédito en menos de 5 minutos!
-*   **Variedad de Opciones de Crédito:** Ofrecemos diferentes tipos de préstamos para ayudarte a alcanzar tus metas:
-    *   Créditos Educativos
-    *   Crédito para Vivienda (Ahorro Programado y Adecuación)
-    *   Libre Inversión y/o Consumo
-    *   Crédito para Actividades Lucrativas
-    *   Crédito de Transporte
-    *   Crédito para Complemento en Salud
-    *   Crédito para Complemento Funerario
-*   **Proceso Conveniente y Digital:** Realiza todo el proceso de solicitud en línea, sin necesidad de desplazarte.
-*   **Descuentos por Nómina:** Los pagos de tus cuotas se descuentan directamente de tu nómina, facilitando la gestión de tus finanzas.
-*   **Cuotas Fijas:** Disfruta de la tranquilidad de saber que tus cuotas serán fijas, permitiéndote planificar mejor tus gastos.
-*   **Desembolso Directo:** Una vez aprobado, el dinero de tu préstamo se transfiere directamente a tu cuenta personal.
-*   **Accesibilidad:** No siempre es necesario contar con experiencia crediticia previa para acceder a nuestros servicios.
-*   **Tasas Competitivas:** Nos esforzamos por ofrecerte tasas de interés competitivas en el sector financiero.
+*   **Framework:** [Next.js](https://nextjs.org/) (v15.3.0)
+*   **Language:** [TypeScript](https://www.typescriptlang.org/)
+*   **UI:**
+    *   [React](https://reactjs.org/) (v19)
+    *   [Tailwind CSS](https://tailwindcss.com/) (v4)
+    *   [Lucide React](https://lucide.dev/guide/packages/lucide-react) (for icons)
+*   **API Communication:** [Axios](https://axios-http.com/)
+*   **Mobile Bundling:** [Capacitor](https://capacitorjs.com/) (for Android and iOS)
+*   **Key Libraries:**
+    *   `@vercel/speed-insights`: Performance monitoring.
+    *   `driver.js`: For guided tours and feature introductions.
+    *   `js-cookie`: Client-side cookie management.
+    *   `jwt-decode`: Decoding JSON Web Tokens.
+    *   `pako`: zlib compression/decompression.
+    *   `react-select`: Enhanced select input components.
+    *   `react-signature-canvas`: For capturing user signatures.
+    *   `sonner`: Toast notifications.
+*   **Linting:** [ESLint](https://eslint.org/)
+*   **Package Manager:** npm (inferred from `package-lock.json`)
 
-## Beneficios para las Empresas Aliadas
+## Project Structure
 
-CreditoYa también ofrece ventajas significativas para las empresas que se alían con nosotros para ofrecer este beneficio a sus empleados:
+*   `src/app/`: Main application code, following Next.js App Router conventions.
+    *   `api/`: Backend API route handlers.
+    *   `auth/`: Authentication related pages and components.
+    *   `panel/`: User dashboard/panel sections.
+*   `src/components/`: Reusable React components.
+*   `src/context/`: React Context providers (e.g., `AuthContext`, `DarkModeContext`).
+*   `src/hooks/`: Custom React hooks.
+*   `src/lib/`: Utility functions and libraries (e.g., `api-client.ts`).
+*   `public/`: Static assets.
+*   `android/`, `ios/`: Capacitor native project folders (generated).
+*   `mobile-dist/`: Output directory for mobile builds (used by Capacitor).
 
-*   **Proceso 100% Digital:** Fácil y rápido de implementar.
-*   **Sin Impacto en la Productividad:** El proceso no interfiere con el desempeño laboral de los empleados.
-*   **Sin Riesgo para la Empresa:** La empresa no actúa como codeudor solidario ni compromete su capital de trabajo.
-*   **Valor Agregado:** Representa un beneficio atractivo para los empleados, mejorando su bienestar y la relación con la empresa.
-*   **Cobertura Nacional:** Disponible para empresas en todo el país.
-*   **Control de Endeudamiento:** Ayuda a los empleados a gestionar su endeudamiento de manera responsable.
+## Getting Started
 
-## Primeros Pasos (Para Desarrolladores)
+### Prerequisites
 
-Este es un proyecto [Next.js](https://nextjs.org) iniciado con [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+*   Node.js (check `package.json` for engine specifics, or use a recent LTS version)
+*   npm
 
-Para ejecutar el servidor de desarrollo:
+### Installation
+
+1.  Clone the repository:
+    ```bash
+    git clone <repository-url>
+    cd creditoya_web_v2
+    ```
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+
+### Running the Development Server
+
+To run the web application in development mode (with Turbopack):
 
 ```bash
 npm run dev
-# o
-yarn dev
-# o
-pnpm dev
-# o
-bun dev
 ```
 
-Abre [http://localhost:3000](http://localhost:3000) en tu navegador para ver el resultado.
+Open [http://localhost:3000](http://localhost:3000) in your browser to see the result. The page auto-updates as you edit files.
 
-Puedes comenzar a editar la página modificando `src/app/page.tsx`. La página se actualiza automáticamente a medida que editas el archivo.
+### Building for Production
 
-Este proyecto utiliza [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) para optimizar y cargar automáticamente [Geist](https://vercel.com/font), una nueva familia de fuentes para Vercel.
+**Web Application:**
 
-## Aprende Más (Para Desarrolladores)
+To create a production build for the web:
 
-Para aprender más sobre Next.js, echa un vistazo a los siguientes recursos:
+```bash
+npm run build
+```
 
-- [Documentación de Next.js](https://nextjs.org/docs) - aprende sobre las características y la API de Next.js.
-- [Aprende Next.js](https://nextjs.org/learn) - un tutorial interactivo de Next.js.
+This will generate an optimized build in the `.next` directory. To run this build locally:
 
-Puedes consultar [el repositorio de GitHub de Next.js](https://github.com/vercel/next.js) - ¡tus comentarios y contribuciones son bienvenidos!
+```bash
+npm run start
+```
 
-## Despliegue en Vercel (Para Desarrolladores)
+**Mobile Application (Capacitor):**
 
-La forma más fácil de desplegar tu aplicación Next.js es utilizar la [Plataforma Vercel](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) de los creadores de Next.js.
+1.  Build the web assets specifically for mobile (outputs to `mobile-dist/`):
+    ```bash
+    npm run build:mobile
+    ```
+    *(Note: This script uses `next.config.mobile.js`, which might contain specific configurations for the mobile build.)*
 
-Consulta nuestra [documentación de despliegue de Next.js](https://nextjs.org/docs/app/building-your-application/deploying) para más detalles.
+2.  Sync the web assets with the native Capacitor projects:
+    ```bash
+    npx cap sync
+    ```
+
+3.  Open the native project in its IDE:
+    *   For Android:
+        ```bash
+        npx cap open android
+        ```
+    *   For iOS:
+        ```bash
+        npx cap open ios
+        ```
+    Then, build and run from Android Studio or Xcode.
+
+## Scripts
+
+Key scripts available in `package.json`:
+
+*   `npm run dev`: Starts the Next.js development server with Turbopack.
+*   `npm run build`: Creates a production build of the Next.js web application.
+*   `npm run build:mobile`: Creates a production build specifically for Capacitor (outputs to `mobile-dist/`).
+*   `npm run start`: Starts the Next.js production server after a build.
+*   `npm run lint`: Lints the codebase using ESLint.
+*   `npm run cap:sync`: Convenience script that runs `build:mobile` then `npx cap sync`.
+*   `npm run cap:android`: Runs `cap:sync` then opens the Android project.
+*   `npm run cap:ios`: Runs `cap:sync` then opens the iOS project.
+
+## Linting
+
+This project uses ESLint for code quality. Run the linter with:
+
+```bash
+npm run lint
+```
+
+Ensure there are no linting errors before committing changes.
+
+## Configuration Files
+
+*   `next.config.ts`: Main Next.js configuration.
+*   `next.config.mobile.js`: (Assumed) Next.js configuration for mobile builds.
+*   `capacitor.config.ts`: Capacitor configuration, including app ID and server settings.
+*   `tsconfig.json`: TypeScript compiler options.
+*   `postcss.config.mjs`, `tailwind.config.js` (Implicit, based on `tailwindcss` dependency): Configuration for Tailwind CSS.
+*   `eslint.config.mjs`: ESLint configuration.
+
+## Deployment
+
+*   **Web:** The `next.config.ts` specifies `output: 'standalone'`, suggesting deployments as a standalone Node.js server. The original README also mentioned Vercel.
+*   **Mobile Backend/API:** The `capacitor.config.ts` points to a server URL at `https://creditoya-superapp-beta-894489564991.us-central1.run.app`, likely a Google Cloud Run deployment for backend services used by the mobile app.
+
+## Further Learning (Next.js)
+
+*   [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+*   [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+---
+
+*This README provides a technical overview for developers. For user-facing information about CreditoYa, please refer to the application's official website or contact the CreditoYa team.*
