@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, memo, useCallback } from 'react';
-import { ShieldCheck, Eye, EyeOff, Building2, Mail, Lock, User, Check, AlertCircle, LucideIcon } from 'lucide-react';
+import { ShieldCheck, Eye, EyeOff, Building2, Mail, Lock, User, Check, AlertCircle, LucideIcon, Info, X } from 'lucide-react';
 import Image from 'next/image';
 import logoCY from "@/assets/logos/only_object_logo.png"
 import useAuth from '@/hooks/useAuth';
@@ -150,15 +150,10 @@ function AuthPage() {
         handleSubmit,
         generateMagicRecovery,
         handleRecoveryPassword,
-        showPassword,
-        setShowPassword,
         companies
     } = useAuth();
 
-    // Memoizamos el handler del password toggle
-    const handlePasswordToggle = useCallback(() => {
-        setShowPassword(!showPassword);
-    }, [showPassword, setShowPassword]);
+    const [isVisible, setIsVisible] = useState(true);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black flex">
@@ -194,8 +189,28 @@ function AuthPage() {
                         </div>
                     </div>
 
+                    {isVisible && isLogin && (
+                        <div className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white px-4 py-3 rounded-lg shadow-lg mb-8 sm:mb-0">
+                            <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center space-x-3">
+                                    <Info className="h-5 w-5 text-blue-500 dark:text-blue-400 flex-shrink-0" />
+                                    <span className="sm:text-sm text-xs font-medium">
+                                        ¿No tienes cuenta? Necesitas registrarte para continuar
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={() => setIsVisible(false)}
+                                    className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors duration-200 p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+                                    aria-label="Cerrar banner"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Header */}
-                    <div className="text-center sm:mt-20 mb-6 lg:mb-8">
+                    <div className="text-center sm:mt-10 mb-6 lg:mb-8">
                         <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-3">
                             {isLogin && !isRecovery && "Bienvenido de nuevo"}
                             {!isLogin && !isRecovery && "Crear cuenta"}
