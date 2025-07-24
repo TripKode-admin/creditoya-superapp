@@ -33,10 +33,23 @@ export async function POST(request: NextRequest) {
         return res;
     } catch (error: any) {
         console.error('Error en login:', error.response?.data);
-        
+        // Extraer el mensaje real del error
+        let errorMessage = 'Error al iniciar sesión';
+        if (error.response?.data) {
+            if (Array.isArray(error.response.data.message)) {
+                errorMessage = error.response.data.message[0];
+            } else if (typeof error.response.data.message === 'string') {
+                errorMessage = error.response.data.message;
+            } else if (typeof error.response.data.error === 'string') {
+                errorMessage = error.response.data.error;
+            }
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+
         return NextResponse.json({
             success: false,
-            error: error.response?.data?.error || error.message || 'Error al iniciar sesión'
+            error: errorMessage
         }, { status: error.response?.status || 500 });
     }
 }

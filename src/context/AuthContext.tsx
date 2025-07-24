@@ -80,16 +80,27 @@ export const ClientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
             return true;
         } catch (error: any) {
-            const errorMessage = error.response?.data?.error || error.message || 'Error al iniciar sesión';
-
+            let errorMessage = 'Error al iniciar sesión';
+            if (error.response?.data) {
+                // Si message es un array, toma el primero
+                if (Array.isArray(error.response.data.message)) {
+                    errorMessage = error.response.data.message[0];
+                } else if (typeof error.response.data.message === 'string') {
+                    errorMessage = error.response.data.message;
+                } else if (typeof error.response.data.error === 'string') {
+                    // Solo si no hay message, muestra error
+                    errorMessage = error.response.data.error;
+                }
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+        
             setAuthState(prev => ({
                 ...prev,
                 isLoading: false,
                 isAuthenticated: false,
                 error: errorMessage
             }));
-            // console.error("Login error:", errorMessage);
-            // toast.error("Credenciales inválidas");
             return false;
         }
     };
@@ -126,10 +137,9 @@ export const ClientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 ...prev,
                 isLoading: false,
                 isAuthenticated: false,
-                error: "Credenciales inválidas"
+                error: errorMessage
             }));
 
-            toast.error(errorMessage);
             return false;
         }
     };
@@ -187,7 +197,6 @@ export const ClientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         } catch (error: any) {
             const errorMessage = error.response?.data?.error || error.message || 'Error en la operación';
             stopLoading(key, errorMessage);
-            toast.error(errorMessage);
             return { success: false, error: errorMessage };
         }
     }
