@@ -1,5 +1,7 @@
 # CreditoYa Web Application (v2)
 
+> **Estado del proyecto:** 🟢 Producción
+
 This repository contains the source code for the CreditoYa web application (v2), a platform built with Next.js and TypeScript. It's designed to be a progressive web app (PWA) and can also be bundled as a native mobile application using Capacitor.
 
 ## Project Overview
