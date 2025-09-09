@@ -124,7 +124,7 @@ function useAuth() {
 
         try {
             const resMagicLink = await axios.post(
-                'api/auth/recovery-pass/magic',
+                '/api/auth/recovery-pass/magic/',
                 { email, userType: 'client' }
             );
 

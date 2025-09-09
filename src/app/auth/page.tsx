@@ -404,7 +404,7 @@ function AuthPage() {
                                     )}
                                     {isLogin && !isRecovery && (isLoading ? "Ingresando..." : "Ingresar")}
                                     {!isLogin && !isRecovery && (isLoading ? "Registrando..." : "Crear cuenta")}
-                                    {isRecovery && (isLoading ? "Enviando..." : "Enviar instrucciones")}
+                                    {isRecovery && (isLoading ? "Enviando..." : "Verificar correo electrónico")}
                                 </button>
                             </div>
                         )}
