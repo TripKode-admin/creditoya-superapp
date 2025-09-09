@@ -9,12 +9,21 @@ export const maxDuration = 60; // 60 segundos para subidas grandes
 export const dynamic = 'force-dynamic'; // Forzar que esta ruta sea dinámica
 
 export async function POST(request: NextRequest) {
+    console.log("🚀 [API_LOAN] Iniciando procesamiento de solicitud de préstamo...");
+    
     const cookieStore = await cookies();
     const token = cookieStore.get('creditoya_token')?.value;
 
+    console.log("🔐 [API_LOAN] Verificando autenticación:", {
+        hasToken: !!token,
+        tokenPreview: token ? token.substring(0, 20) + "..." : "No token"
+    });
+
     try {
         await validateToken(token);
+        console.log("✅ [API_LOAN] Token válido, continuando...");
     } catch (error) {
+        console.error("❌ [API_LOAN] Error de autenticación:", error);
         return NextResponse.json({
             success: false,
             error: 'Token inválido o expirado'
@@ -22,14 +31,19 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-        console.log('[UPLOAD] Iniciando procesamiento de archivos...');
+        console.log("📦 [API_LOAN] Iniciando procesamiento de archivos...");
 
         // Verificar el tamaño del contenido antes de procesarlo
         const contentLength = request.headers.get('content-length');
         const maxRequestSize = 50 * 1024 * 1024; // 50MB para la request completa
 
+        console.log("📏 [API_LOAN] Verificando tamaño de solicitud:", {
+            contentLength: contentLength ? `${(parseInt(contentLength) / 1024 / 1024).toFixed(2)}MB` : "No especificado",
+            maxRequestSize: `${(maxRequestSize / 1024 / 1024).toFixed(2)}MB`
+        });
+
         if (contentLength && parseInt(contentLength) > maxRequestSize) {
-            console.log(`[UPLOAD] Request demasiado grande: ${contentLength} bytes`);
+            console.error(`❌ [API_LOAN] Request demasiado grande: ${contentLength} bytes`);
             return NextResponse.json({
                 success: false,
                 error: 'La solicitud es demasiado grande. Máximo 50MB total.'
@@ -39,9 +53,11 @@ export async function POST(request: NextRequest) {
         // Parse FormData con timeout
         let formData: FormData;
         try {
+            console.log("🔄 [API_LOAN] Parseando FormData...");
             formData = await request.formData();
+            console.log("✅ [API_LOAN] FormData parseado exitosamente");
         } catch (error) {
-            console.error('[UPLOAD] Error parsing FormData:', error);
+            console.error('❌ [API_LOAN] Error parsing FormData:', error);
             return NextResponse.json({
                 success: false,
                 error: 'Error al procesar los archivos. Posible tamaño excesivo.'
@@ -49,6 +65,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Extract the form fields from formData
+        console.log("📋 [API_LOAN] Extrayendo campos del formulario...");
         const phone = formData.get('phone') as string;
         const signature = formData.get('signature') as string;
         const userId = formData.get('user_id') as string;
@@ -60,7 +77,21 @@ export async function POST(request: NextRequest) {
         const terms_and_conditions = formData.get('terms_and_conditions') === 'true';
         const isValorAgregado = formData.get('isValorAgregado') === 'true';
 
+        console.log("📝 [API_LOAN] Campos extraídos:", {
+            hasPhone: !!phone,
+            hasSignature: !!signature,
+            userId,
+            entity,
+            hasBankAccount: !!bankNumberAccount,
+            cantity,
+            city,
+            residence_address,
+            terms_and_conditions,
+            isValorAgregado
+        });
+
         // Extract file uploads
+        console.log("📁 [API_LOAN] Extrayendo archivos...");
         const labor_card = formData.get('labor_card') as File | null;
         const fisrt_flyer = formData.get('fisrt_flyer') as File | null;
         const second_flyer = formData.get('second_flyer') as File | null;
@@ -70,18 +101,28 @@ export async function POST(request: NextRequest) {
         const files = { labor_card, fisrt_flyer, second_flyer, third_flyer };
         let totalSize = 0;
 
+        console.log("📊 [API_LOAN] Análisis de archivos:");
         Object.entries(files).forEach(([key, file]) => {
             if (file) {
                 const sizeMB = (file.size / 1024 / 1024).toFixed(2);
-                console.log(`[UPLOAD] ${key}: ${sizeMB}MB, tipo: ${file.type}`);
+                console.log(`📄 [API_LOAN] ${key}:`, {
+                    name: file.name,
+                    size: `${sizeMB}MB`,
+                    type: file.type
+                });
                 totalSize += file.size;
+            } else {
+                console.log(`📄 [API_LOAN] ${key}: No proporcionado`);
             }
         });
 
-        console.log(`[UPLOAD] Tamaño total: ${(totalSize / 1024 / 1024).toFixed(2)}MB`);
+        console.log(`📊 [API_LOAN] Tamaño total: ${(totalSize / 1024 / 1024).toFixed(2)}MB`);
 
         // Validate required fields
+        console.log("🔍 [API_LOAN] Iniciando validaciones...");
+        
         if (!signature) {
+            console.error("❌ [API_LOAN] Validación fallida: Firma faltante");
             return NextResponse.json({
                 success: false,
                 error: 'No se proporcionó la firma del préstamo'
@@ -89,6 +130,7 @@ export async function POST(request: NextRequest) {
         }
         
         if (!userId) {
+            console.error("❌ [API_LOAN] Validación fallida: ID de usuario faltante");
             return NextResponse.json({
                 success: false,
                 error: 'No se proporcionó el ID del usuario'
@@ -96,6 +138,12 @@ export async function POST(request: NextRequest) {
         }
         
         if (!entity || !bankNumberAccount || !cantity || !terms_and_conditions) {
+            console.error("❌ [API_LOAN] Validación fallida: Campos obligatorios faltantes", {
+                hasEntity: !!entity,
+                hasBankAccount: !!bankNumberAccount,
+                hasCantity: !!cantity,
+                termsAccepted: terms_and_conditions
+            });
             return NextResponse.json({
                 success: false,
                 error: 'Faltan campos obligatorios'
@@ -104,20 +152,43 @@ export async function POST(request: NextRequest) {
 
         // If not isValorAgregado, check for required files
         if (!isValorAgregado && (!labor_card || !fisrt_flyer || !second_flyer || !third_flyer)) {
+            console.error("❌ [API_LOAN] Validación fallida: Archivos requeridos faltantes", {
+                isValorAgregado,
+                files: {
+                    labor_card: !!labor_card,
+                    fisrt_flyer: !!fisrt_flyer,
+                    second_flyer: !!second_flyer,
+                    third_flyer: !!third_flyer
+                }
+            });
             return NextResponse.json({
                 success: false,
                 error: 'Faltan archivos requeridos'
             }, { status: 400 });
         }
 
+        console.log("✅ [API_LOAN] Todas las validaciones básicas pasaron");
+
         // Validate file types and sizes - Límites consistentes
+        console.log("🔍 [API_LOAN] Validando tipos y tamaños de archivos...");
         const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
         const maxFileSize = 12 * 1024 * 1024; // 12MB por archivo (más conservador)
         const maxTotalSize = 45 * 1024 * 1024; // 45MB total (dejar margen para metadata)
 
+        console.log("📏 [API_LOAN] Límites de validación:", {
+            maxFileSize: `${(maxFileSize / 1024 / 1024).toFixed(2)}MB`,
+            maxTotalSize: `${(maxTotalSize / 1024 / 1024).toFixed(2)}MB`,
+            allowedTypes
+        });
+
         for (const [key, file] of Object.entries(files)) {
             if (file) {
                 if (!allowedTypes.includes(file.type)) {
+                    console.error(`❌ [API_LOAN] Tipo de archivo no permitido para ${key}:`, {
+                        fileName: file.name,
+                        fileType: file.type,
+                        allowedTypes
+                    });
                     return NextResponse.json({
                         success: false,
                         error: `Tipo de archivo no permitido para ${key}. Solo PDF, JPG, PNG`
@@ -125,6 +196,11 @@ export async function POST(request: NextRequest) {
                 }
 
                 if (file.size > maxFileSize) {
+                    console.error(`❌ [API_LOAN] Archivo ${key} muy grande:`, {
+                        fileName: file.name,
+                        fileSize: `${(file.size / 1024 / 1024).toFixed(2)}MB`,
+                        maxSize: `${(maxFileSize / 1024 / 1024).toFixed(2)}MB`
+                    });
                     return NextResponse.json({
                         success: false,
                         error: `Archivo ${key} muy grande (máximo 12MB). Actual: ${(file.size / 1024 / 1024).toFixed(2)}MB`
@@ -134,13 +210,20 @@ export async function POST(request: NextRequest) {
         }
 
         if (totalSize > maxTotalSize) {
+            console.error("❌ [API_LOAN] Tamaño total excede límite:", {
+                totalSize: `${(totalSize / 1024 / 1024).toFixed(2)}MB`,
+                maxTotalSize: `${(maxTotalSize / 1024 / 1024).toFixed(2)}MB`
+            });
             return NextResponse.json({
                 success: false,
                 error: `Tamaño total de archivos excede 45MB (actual: ${(totalSize / 1024 / 1024).toFixed(2)}MB)`
             }, { status: 400 });
         }
 
+        console.log("✅ [API_LOAN] Validaciones de archivos pasaron correctamente");
+
         // Create a new FormData for the API request
+        console.log("🔄 [API_LOAN] Preparando datos para envío al backend...");
         const apiFormData = new FormData();
 
         // Add body fields to the API request
@@ -164,6 +247,18 @@ export async function POST(request: NextRequest) {
         if (second_flyer) apiFormData.append('second_flyer', second_flyer);
         if (third_flyer) apiFormData.append('third_flyer', third_flyer);
 
+        console.log("📤 [API_LOAN] Datos preparados para backend:", {
+            userId,
+            entity,
+            bankNumberAccount,
+            cantity,
+            city,
+            residence_address,
+            terms_and_conditions,
+            isValorAgregado,
+            filesCount: Object.values(files).filter(f => f).length
+        });
+
         // Configure the request headers with increased limits
         const config = {
             headers: {
@@ -175,27 +270,44 @@ export async function POST(request: NextRequest) {
             maxBodyLength: 50 * 1024 * 1024, // 50MB
         };
 
+        console.log("⚙️ [API_LOAN] Configuración de request:", {
+            timeout: "120s",
+            maxContentLength: "50MB",
+            maxBodyLength: "50MB",
+            hasAuthHeader: !!config.headers.Authorization
+        });
+
         try {
             const baseURL = process.env.GATEWAY_API || '';
 
             if (!baseURL) {
-                console.error('[UPLOAD] GATEWAY_API no configurado');
+                console.error("❌ [API_LOAN] GATEWAY_API no configurado");
                 return NextResponse.json({
                     success: false,
                     error: 'Configuración del servidor incompleta'
                 }, { status: 500 });
             }
 
-            console.log('[UPLOAD] Enviando al backend...');
+            console.log("🌐 [API_LOAN] Enviando al backend:", {
+                url: `${baseURL}/loans/${userId}`,
+                baseURL: baseURL.substring(0, 20) + "..."
+            });
 
+            const startTime = Date.now();
             // Make the request to the backend API
             const loanResponse = await axios.post(
                 `${baseURL}/loans/${userId}`,
                 apiFormData,
                 config
             );
+            const endTime = Date.now();
+            const duration = endTime - startTime;
 
-            console.log('[UPLOAD] Backend response:', loanResponse.status, loanResponse.statusText);
+            console.log(`✅ [API_LOAN] Respuesta del backend recibida en ${duration}ms:`, {
+                status: loanResponse.status,
+                statusText: loanResponse.statusText,
+                hasData: !!loanResponse.data
+            });
 
             return NextResponse.json({
                 success: true,
@@ -204,16 +316,18 @@ export async function POST(request: NextRequest) {
             });
 
         } catch (apiError: any) {
-            console.error('[UPLOAD] Backend error:', {
+            console.error("💥 [API_LOAN] Error del backend:", {
                 status: apiError.response?.status,
                 statusText: apiError.response?.statusText,
                 data: apiError.response?.data,
                 message: apiError.message,
-                code: apiError.code
+                code: apiError.code,
+                url: apiError.config?.url
             });
 
             // Handle specific error cases
             if (apiError.code === 'ECONNABORTED') {
+                console.error("⏰ [API_LOAN] Error de timeout - La solicitud tardó demasiado");
                 return NextResponse.json({
                     success: false,
                     error: 'Timeout: La subida de archivos tardó demasiado tiempo'
@@ -221,6 +335,7 @@ export async function POST(request: NextRequest) {
             }
 
             if (apiError.response?.status === 413) {
+                console.error("📦 [API_LOAN] Error de tamaño - Archivos demasiado grandes para el backend");
                 return NextResponse.json({
                     success: false,
                     error: 'Los archivos son demasiado grandes para el servidor backend'
@@ -228,6 +343,7 @@ export async function POST(request: NextRequest) {
             }
 
             if (apiError.response?.status === 400) {
+                console.error("📝 [API_LOAN] Error de validación - Datos inválidos enviados al backend");
                 return NextResponse.json({
                     success: false,
                     error: apiError.response?.data?.message || 'Datos inválidos enviados al backend'
@@ -235,12 +351,14 @@ export async function POST(request: NextRequest) {
             }
 
             if (apiError.response?.status >= 500) {
+                console.error("🖥️ [API_LOAN] Error interno del servidor backend");
                 return NextResponse.json({
                     success: false,
                     error: 'Error interno del servidor backend'
                 }, { status: 502 });
             }
 
+            console.error("❓ [API_LOAN] Error no clasificado:", apiError.response?.data?.message || 'Error al comunicarse con el backend');
             return NextResponse.json({
                 success: false,
                 error: apiError.response?.data?.message || 'Error al comunicarse con el backend'
@@ -248,9 +366,14 @@ export async function POST(request: NextRequest) {
         }
 
     } catch (error: any) {
-        console.error('[UPLOAD] Server error:', error);
+        console.error("💥 [API_LOAN] Error general del servidor:", {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+        });
 
         if (error.name === 'PayloadTooLargeError' || error.message?.includes('too large')) {
+            console.error("📦 [API_LOAN] Error de tamaño - Límite del servidor excedido");
             return NextResponse.json({
                 success: false,
                 error: 'Los archivos son muy grandes para procesar (límite del servidor)'
@@ -258,12 +381,14 @@ export async function POST(request: NextRequest) {
         }
 
         if (error.name === 'SyntaxError' && error.message?.includes('JSON')) {
+            console.error("📝 [API_LOAN] Error de sintaxis - Datos del formulario malformados");
             return NextResponse.json({
                 success: false,
                 error: 'Error al procesar los datos del formulario'
             }, { status: 400 });
         }
 
+        console.error("🖥️ [API_LOAN] Error interno del servidor");
         return NextResponse.json({
             success: false,
             error: 'Error interno del servidor'

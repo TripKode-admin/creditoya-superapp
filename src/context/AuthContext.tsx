@@ -4,7 +4,11 @@ import { AuthContextType, AuthState, LoadingState } from "@/types/client";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { getBrowserCapabilities, getAdaptiveTimeout, isLegacyBrowser } from "@/lib/browser-capabilities";
+import { createStorageManager } from "@/lib/storage-manager";
+import { createTokenRefreshManager } from "@/lib/token-refresh-manager";
+import { createErrorHandler } from "@/lib/error-handler";
+import { applyPolyfills, needsPolyfills } from "@/lib/polyfills";
 
 // Create context
 const ClientAuthContext = createContext<AuthContextType | null>(null);
@@ -20,30 +24,70 @@ export const ClientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const [loadingStates, setLoadingStates] = useState<Record<string, LoadingState>>({});
     const router = useRouter();
 
+    // Inicializar capacidades del navegador y sistemas de compatibilidad
+    const [browserCapabilities] = useState(() => {
+        const capabilities = getBrowserCapabilities();
+        
+        // Aplicar polyfills si es necesario
+        if (needsPolyfills(capabilities)) {
+            console.log('🔧 [AUTH] Navegador legacy detectado, aplicando polyfills...');
+            applyPolyfills(capabilities);
+        }
+        
+        return capabilities;
+    });
+
+    // Inicializar sistemas de compatibilidad
+    const [storageManager] = useState(() => createStorageManager(browserCapabilities));
+    const [errorHandler] = useState(() => createErrorHandler({
+        networkTimeout: getAdaptiveTimeout(browserCapabilities),
+        retryStrategy: isLegacyBrowser(browserCapabilities) ? 'exponential-backoff' : 'linear',
+        maxRetries: browserCapabilities.connectionSpeed === 'slow' ? 5 : 3,
+        offlineMode: 'cache-last-known-state'
+    }, browserCapabilities));
+    
+    const [tokenRefreshManager] = useState(() => createTokenRefreshManager({
+        refreshThreshold: isLegacyBrowser(browserCapabilities) ? 0.9 : 0.8, // Refresh más temprano en navegadores antiguos
+        maxRetries: browserCapabilities.connectionSpeed === 'slow' ? 5 : 3,
+        enableBackgroundRefresh: !isLegacyBrowser(browserCapabilities) // Deshabilitar en navegadores muy antiguos
+    }, browserCapabilities, storageManager));
+
     // Check authentication status on mount
     useEffect(() => {
         const checkAuthStatus = async () => {
             try {
+                // Usar axios directamente para debuggear
                 const res = await axios.get("/api/auth/me", {
                     withCredentials: true,
-                    // Add timeout to prevent hanging requests
-                    timeout: 5000
+                    timeout: getAdaptiveTimeout(browserCapabilities)
                 });
 
-                if (res.data.success && res.data.data?.user) {
+                console.log('🔍 [CHECK_AUTH] Respuesta directa de axios:', {
+                    status: res.status,
+                    hasData: !!res.data,
+                    dataStructure: res.data ? Object.keys(res.data) : 'no data',
+                    success: res.data?.success,
+                    hasUser: !!res.data?.data?.user,
+                    fullResponse: res.data
+                });
+
+                if (res.data?.success && res.data?.data?.user) {
+                    console.log('✅ [CHECK_AUTH] Usuario autenticado correctamente');
                     setAuthState({
                         isAuthenticated: true,
                         isLoading: false,
                         error: null,
                         user: res.data.data.user
                     });
+                    
+                    // Iniciar refresh automático de tokens
+                    tokenRefreshManager.startAutoRefresh();
                 } else {
+                    console.log('❌ [CHECK_AUTH] Usuario no autenticado o datos inválidos');
                     setAuthState(prev => ({ ...prev, isLoading: false }));
                 }
             } catch (error: any) {
-                // Don't show error toast for authentication checks - this is normal for non-authenticated users
-                console.log("Auth check: User not authenticated");
-
+                console.log("Auth check: User not authenticated", error);
                 setAuthState(prev => ({
                     ...prev,
                     isLoading: false,
@@ -53,23 +97,55 @@ export const ClientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         };
 
         checkAuthStatus();
-    }, []);
+    }, [browserCapabilities, tokenRefreshManager]);
 
     const login = async (email: string, password: string): Promise<boolean> => {
         setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
 
         try {
-            const res = await axios.post(
-                "/api/auth",  // Esta ruta debe manejar la configuración de cookies
-                { email, password },
-                { withCredentials: true }  // Importante para recibir las cookies
-            );
+            const result = await errorHandler.handleNetworkError(async () => {
+                const res = await axios.post(
+                    "/api/auth",
+                    { email, password },
+                    { 
+                        withCredentials: true,
+                        timeout: getAdaptiveTimeout(browserCapabilities)
+                    }
+                );
+                return res;
+            }, { operation: 'login' });
 
-            if (!res.data.success || !res.data.data?.user) {
+            console.log('🔍 [LOGIN] Resultado del error handler:', {
+                success: result.success,
+                hasData: !!result.data,
+                dataStructure: result.data ? Object.keys(result.data) : 'no data',
+                responseData: result.data?.data ? Object.keys(result.data.data) : 'no response data'
+            });
+
+            if (!result.success) {
+                console.error('❌ [LOGIN] Error en la operación:', result.error);
+                throw new Error(result.error || 'Credenciales inválidas');
+            }
+
+            const response = result.data;
+            console.log('🔍 [LOGIN] Estructura de respuesta:', {
+                hasResponse: !!response,
+                hasData: !!response?.data,
+                success: response?.data?.success,
+                hasUser: !!response?.data?.data?.user
+            });
+
+            if (!response?.data) {
+                console.error('❌ [LOGIN] Respuesta sin datos:', response);
                 throw new Error('Credenciales inválidas');
             }
 
-            const { user } = res.data.data;
+            if (!response.data.success || !response.data.data?.user) {
+                console.error('❌ [LOGIN] Respuesta inválida:', response);
+                throw new Error('Credenciales inválidas');
+            }
+
+            const { user } = response.data.data;
 
             setAuthState({
                 isAuthenticated: true,
@@ -77,6 +153,9 @@ export const ClientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 error: null,
                 user
             });
+
+            // Iniciar refresh automático de tokens después del login exitoso
+            tokenRefreshManager.startAutoRefresh();
 
             return true;
         } catch (error: any) {
@@ -115,10 +194,40 @@ export const ClientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
 
         try {
-            const res = await axios.post("/api/auth/register", userData);
-            const { user } = res.data.data;
+            const result = await errorHandler.handleNetworkError(async () => {
+                const res = await axios.post("/api/auth/register", userData, {
+                    withCredentials: true,
+                    timeout: getAdaptiveTimeout(browserCapabilities)
+                });
+                return res;
+            }, { operation: 'register' });
+
+            console.log('🔍 [REGISTER] Resultado del error handler:', {
+                success: result.success,
+                hasData: !!result.data,
+                dataStructure: result.data ? Object.keys(result.data) : 'no data'
+            });
+
+            if (!result.success) {
+                console.error('❌ [REGISTER] Error en la operación:', result.error);
+                throw new Error(result.error || 'Error en el registro');
+            }
+
+            const response = result.data;
+            if (!response?.data) {
+                console.error('❌ [REGISTER] Respuesta sin datos:', response);
+                throw new Error('Error en el registro');
+            }
+            
+            if (!response.data.success || !response.data.data?.user) {
+                console.error('❌ [REGISTER] Respuesta inválida:', response);
+                throw new Error('Error en el registro');
+            }
+            
+            const { user } = response.data.data;
 
             if (!user) {
+                console.error('❌ [REGISTER] Usuario no encontrado en respuesta:', response);
                 throw new Error('Error en el registro');
             }
 
@@ -129,9 +238,13 @@ export const ClientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 user
             });
 
+            // Iniciar refresh automático de tokens después del registro exitoso
+            tokenRefreshManager.startAutoRefresh();
+
             return true;
         } catch (error: any) {
-            const errorMessage = error.response?.data?.error || error.message || 'Error al registrarse';
+            console.error('❌ [REGISTER] Error capturado:', error);
+            const errorMessage = error.message || 'Error al registrarse';
 
             setAuthState(prev => ({
                 ...prev,
@@ -146,11 +259,21 @@ export const ClientAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     const logout = async () => {
         try {
+            // Detener refresh automático de tokens
+            tokenRefreshManager.stopAutoRefresh();
+            
             // Call logout endpoint to invalidate token on server
-            await axios.post("/api/auth/logout");
+            await errorHandler.handleNetworkError(async () => {
+                return await axios.post("/api/auth/logout", {}, {
+                    timeout: getAdaptiveTimeout(browserCapabilities)
+                });
+            }, { operation: 'logout' });
         } catch (error) {
             console.error("Error during logout:", error);
         }
+
+        // Limpiar almacenamiento local
+        storageManager.clear();
 
         // Reset state
         setAuthState({
