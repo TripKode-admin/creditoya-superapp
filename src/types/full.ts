@@ -137,6 +137,8 @@ export type ILoanApplication = {
     signature: string;
     upSignatureId: string;
     isDisbursed: string
+    cycode: string;
+    extract: string;
     status: LoanStatus;
     created_at: Date;
     updated_at: Date;

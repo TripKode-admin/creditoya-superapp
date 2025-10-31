@@ -1,0 +1,23 @@
+services:
+  creditoya-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"  # Mapea el puerto 3001 del host al puerto 3000 del contenedor
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+    env_file:
+      - .env
+    volumes:
+      # Montar el directorio de logs si es necesario
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - creditoya-network
+
+networks:
+  creditoya-network:
+    driver: bridge

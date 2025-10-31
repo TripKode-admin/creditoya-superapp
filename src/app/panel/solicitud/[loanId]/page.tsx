@@ -18,7 +18,8 @@ import {
     User,
     Copy,
     ExternalLink,
-    CheckCircle2
+    CheckCircle2,
+    ChevronDown
 } from "lucide-react";
 import { stringToPriceCOP } from "@/handlers/stringToCop";
 import { BankTypes, handleKeyToStringBank } from "@/handlers/stringToBank";
@@ -181,7 +182,40 @@ function LoanInfoPage({ params }: { params: Promise<{ loanId: string }> }) {
                         </div>
                     </div>
                 </div>
+
+                <div className="bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700/50 backdrop-blur-sm overflow-hidden mt-6">
+                    <div className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                                <h3 className="text-lg text-green-700 dark:text-green-400 font-semibold">Estractos actualizados</h3>
+                            </div>
+                            <span className="font-mono text-sm text-gray-500 dark:text-gray-400">
+                                {loan.cycode || ''}
+                            </span>
+                        </div>
+
+                        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border-l-4 border-green-500">
+                            {loan.extract ? (
+                                <div className="flex flex-row justify-between">
+                                    <p className="grid place-content-center text-gray-500">Tus extractos actualizados</p>
+                                    <button
+                                        onClick={() => window.open(loan.extract, '_blank')}
+                                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors duration-200"
+                                    >
+                                        Descargar
+                                    </button>
+                                </div>
+                            ) : (
+                                <p className="text-gray-600 dark:text-gray-400 italic">
+                                    Extractos no disponibles, por el momento
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                </div>
             </div>
+
+
 
             {/* Event Cards with Enhanced Styling */}
             {loan.EventLoanApplication && loan.EventLoanApplication.length !== 0 && loan.EventLoanApplication.map(events => (
